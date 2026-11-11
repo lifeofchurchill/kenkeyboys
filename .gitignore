@@ -1,0 +1,15 @@
+# The virtual environment: large, and anyone can rebuild it from requirements.txt
+venv/
+
+# Python's compiled cache files: regenerated automatically
+__pycache__/
+*.pyc
+
+# The local database: holds your test data and password hashes, never shared
+db.sqlite3
+
+# Secrets file we will add later for keys and passwords
+.env
+
+# Uploaded images (player photos, trophies) once we add them
+media/
