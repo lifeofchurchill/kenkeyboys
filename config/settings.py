@@ -130,3 +130,8 @@ MAILERS = {
 }
 
 AUTH_USER_MODEL = "accounts.User"
+
+# The web address uploaded files are served from
+MEDIA_URL = "media/"
+# The folder on disk where uploaded files are saved
+MEDIA_ROOT = BASE_DIR / "media"

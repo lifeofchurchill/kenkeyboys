@@ -41,6 +41,9 @@ class Player(models.Model):
     # unique=True: two players cannot wear the same shirt number
     shirt_number = models.PositiveSmallIntegerField(unique=True)
     platform = models.CharField(max_length=4, choices=Platform.choices)
+    # Stored as a file in media/players/; the database keeps only the path.
+    # blank=True: a player can be saved before his photo is ready
+    photo = models.ImageField(upload_to="players/", blank=True)
 
     # Lets the captain hide a player who left without deleting his stats
     is_active = models.BooleanField(default=True)
