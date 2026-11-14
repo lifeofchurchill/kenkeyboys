@@ -6,6 +6,7 @@ from django.urls import include, path
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/", include("club.urls")),
+    path("api/", include("matches.urls")),
 ]
 
 # In development only, let Django hand out uploaded images.
