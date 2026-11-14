@@ -136,3 +136,8 @@ AUTH_USER_MODEL = "accounts.User"
 MEDIA_URL = "media/"
 # The folder on disk where uploaded files are saved
 MEDIA_ROOT = BASE_DIR / "media"
+
+# EA Clubs import
+EA_CLUB_ID = "78431"          # replace with your clubId from step 1
+EA_PLATFORM = "common-gen5"    # current-gen crossplay: PS5, Xbox Series, PC
+EA_SEASON = "FC 27"            # label used for auto-created competitions

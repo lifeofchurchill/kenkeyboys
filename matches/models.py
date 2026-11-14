@@ -41,6 +41,9 @@ class Match(models.Model):
     # which is different from a score of 0
     our_score = models.PositiveSmallIntegerField(null=True, blank=True)
     opponent_score = models.PositiveSmallIntegerField(null=True, blank=True)
+    # EA's own id for this match. It is how we recognise a match we already imported.
+    # Empty (NULL) for matches the captain enters by hand
+    ea_match_id = models.CharField(max_length=30, unique=True, null=True, blank=True, editable=False)
 
     class Meta:
         verbose_name_plural = "matches"  # Django would otherwise write "Matchs"
