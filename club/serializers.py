@@ -21,5 +21,5 @@ class PlayerSerializer(serializers.ModelSerializer):
             "shirt_number",
             "platform",
             "joined_on",
-            "Photo"
+            "Photo",
         ]
