@@ -1,5 +1,7 @@
+from django.utils import timezone
 from django.conf import settings
 from django.db import models
+
 
 
 class Player(models.Model):
@@ -55,3 +57,55 @@ class Player(models.Model):
 
     def __str__(self):
         return f"{self.shirt_number}. {self.display_name} ({self.position})"
+
+
+class Trophy(models.Model):
+    """An honour in the trophy room: a team title or an individual award."""
+
+    class Kind(models.TextChoices):
+        TEAM = "team", "Team"
+        INDIVIDUAL = "individual", "Individual"
+
+    name = models.CharField(max_length=100)
+    kind = models.CharField(max_length=10, choices=Kind.choices, default=Kind.TEAM)
+    season = models.CharField(max_length=20)
+    # Only used for individual awards such as a golden boot; empty for team trophies
+    player = models.ForeignKey(
+        Player,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="trophies",
+    )
+    image = models.ImageField(upload_to="trophies/", blank=True)
+
+    class Meta:
+        verbose_name_plural = "trophies"
+        ordering = ["-season", "name"]
+
+    def __str__(self):
+        return f"{self.name} ({self.season})"
+
+
+class NewsPost(models.Model):
+    """A story on the news page."""
+
+    class Category(models.TextChoices):
+        MATCH_REPORT = "match_report", "Match reports"
+        CLUB_NEWS = "club_news", "Club news"
+        SIGNINGS = "signings", "Signings"
+
+    title = models.CharField(max_length=150)
+    category = models.CharField(max_length=15, choices=Category.choices, default=Category.CLUB_NEWS)
+    # A one or two sentence teaser shown on the news cards
+    summary = models.CharField(max_length=250)
+    body = models.TextField()
+    image = models.ImageField(upload_to="news/", blank=True)
+    # Defaults to now, but the captain can set a future time to schedule a post
+    published_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        ordering = ["-published_at"]
+
+    def __str__(self):
+        return self.title

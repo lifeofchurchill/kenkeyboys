@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Player
+from .models import NewsPost, Player, Trophy
 
 
 class PlayerSerializer(serializers.ModelSerializer):
@@ -23,3 +23,19 @@ class PlayerSerializer(serializers.ModelSerializer):
             "joined_on",
             "Photo",
         ]
+
+class TrophySerializer(serializers.ModelSerializer):
+    # Show the winner's name for individual awards; null for team trophies
+    player_name = serializers.CharField(source="player.display_name", read_only=True, default=None)
+
+    class Meta:
+        model = Trophy
+        fields = ["id", "name", "kind", "season", "player", "player_name", "image"]
+
+
+class NewsPostSerializer(serializers.ModelSerializer):
+    category_label = serializers.CharField(source="get_category_display", read_only=True)
+
+    class Meta:
+        model = NewsPost
+        fields = ["id", "title", "category", "category_label", "summary", "body", "image", "published_at"]

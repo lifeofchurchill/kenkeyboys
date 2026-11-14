@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Player
+from .models import NewsPost, Player, Trophy
 
 
 @admin.register(Player)
@@ -11,3 +11,15 @@ class PlayerAdmin(admin.ModelAdmin):
     list_filter = ("position", "platform", "is_active")
     # Search box looks in these fields
     search_fields = ("display_name", "gamertag")
+    
+@admin.register(Trophy)
+class TrophyAdmin(admin.ModelAdmin):
+    list_display = ("name", "kind", "season", "player")
+    list_filter = ("kind", "season")
+
+
+@admin.register(NewsPost)
+class NewsPostAdmin(admin.ModelAdmin):
+    list_display = ("title", "category", "published_at")
+    list_filter = ("category",)
+    search_fields = ("title", "summary")
