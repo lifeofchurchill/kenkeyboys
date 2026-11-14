@@ -1,7 +1,7 @@
 from rest_framework import viewsets
 
 from .models import Match
-from .serializers import MatchSerializer
+from .serializers import MatchDetailSerializer, MatchSerializer
 
 
 class MatchViewSet(viewsets.ReadOnlyModelViewSet):
@@ -10,24 +10,26 @@ class MatchViewSet(viewsets.ReadOnlyModelViewSet):
       GET /api/matches/                    -> every match, newest first
       GET /api/matches/?status=upcoming    -> fixtures, soonest first
       GET /api/matches/?status=finished    -> results, newest first
-      GET /api/matches/5/                  -> one match
+      GET /api/matches/5/                  -> one match with player stats
     """
 
-    serializer_class = MatchSerializer
+    def get_serializer_class(self):
+        # "retrieve" is the action name for fetching a single item
+        if self.action == "retrieve":
+            return MatchDetailSerializer
+        return MatchSerializer
 
     def get_queryset(self):
-        # select_related fetches each match's competition in the same database query.
-        # Without it, Django would run one extra query per match to get the name
         queryset = Match.objects.select_related("competition")
 
-        # Read the optional ?status=... part of the address
-        status = self.request.query_params.get("status")
+        if self.action == "retrieve":
+            # Load the stat lines and their players in two extra queries in total,
+            # instead of one query per stat line
+            queryset = queryset.prefetch_related("stats__player")
 
-        # Only accept values the model actually defines; ignore anything else
+        status = self.request.query_params.get("status")
         if status in Match.Status.values:
             queryset = queryset.filter(status=status)
-
-        # Fixtures read best soonest-first; everything else keeps newest-first
         if status == Match.Status.UPCOMING:
             queryset = queryset.order_by("kickoff")
 

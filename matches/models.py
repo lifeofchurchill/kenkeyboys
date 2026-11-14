@@ -60,3 +60,30 @@ class Match(models.Model):
         if self.our_score < self.opponent_score:
             return "L"
         return "D"
+
+class PlayerMatchStat(models.Model):
+    """What one player did in one match."""
+
+    # CASCADE: deleting a match removes its stat rows too; they mean nothing without it
+    match = models.ForeignKey(Match, on_delete=models.CASCADE, related_name="stats")
+    # PROTECT: a player with recorded stats cannot be deleted (deactivate him instead).
+    # "club.Player" is written as text to avoid importing between apps
+    player = models.ForeignKey("club.Player", on_delete=models.PROTECT, related_name="stats")
+
+    goals = models.PositiveSmallIntegerField(default=0)
+    assists = models.PositiveSmallIntegerField(default=0)
+    # e.g. 7.8: up to 3 digits in total, 1 after the decimal point
+    rating = models.DecimalField(max_digits=3, decimal_places=1)
+    # The game's own award, copied from the match data
+    is_motm = models.BooleanField("man of the match", default=False)
+
+    class Meta:
+        # A player can only have one stat line per match
+        constraints = [
+            models.UniqueConstraint(fields=["match", "player"], name="one_stat_line_per_player_per_match")
+        ]
+        # Best performers first
+        ordering = ["-rating"]
+
+    def __str__(self):
+        return f"{self.player.display_name} in {self.match}"
