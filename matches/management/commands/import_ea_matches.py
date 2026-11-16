@@ -6,12 +6,12 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 
 from club.models import Player
-from matches.ea import EAError, fetch_matches
+from matches.ea import EAError, fetch_matches, fetch_member_totals
 from matches.models import Competition, Match, PlayerMatchStat
 
 
 class Command(BaseCommand):
-    help = "Import recent matches and player stats from EA."
+    help = "Import recent matches, player stats and season/career totals from EA."
 
     # EA's match types and the competition each one is filed under
     MATCH_TYPES = {
@@ -20,12 +20,16 @@ class Command(BaseCommand):
         "friendlyMatch": "Friendlies",
     }
 
+    # The five totals EA gives us for each member
+    TOTAL_STATS = ("games", "goals", "assists", "rating", "motm")
+
     def handle(self, *args, **options):
         our_id = str(settings.EA_CLUB_ID)
         # Look players up by gamertag, ignoring upper/lower case
         players = {p.gamertag.lower(): p for p in Player.objects.all()}
         imported = 0
 
+        # Part 1: recent matches and who did what in each one
         for match_type, competition_name in self.MATCH_TYPES.items():
             try:
                 raw_matches = fetch_matches(match_type)
@@ -41,12 +45,16 @@ class Command(BaseCommand):
                 if self.import_match(raw, competition, our_id, players):
                     imported += 1
 
+        # Part 2: each player's full season and career totals
+        self.update_totals(players)
+
         self.stdout.write(self.style.SUCCESS(f"Imported {imported} new match(es)."))
 
     # atomic: the match and all its stat lines are saved together or not at all,
     # so a crash halfway never leaves a match with half a team sheet
     @transaction.atomic
     def import_match(self, raw, competition, our_id, players):
+        """Save one match from EA. Returns True if it was new, False if we already had it."""
         ea_id = str(raw["matchId"])
 
         # Already imported: skip it, which also preserves any edits the captain made
@@ -74,7 +82,7 @@ class Command(BaseCommand):
             name = ea_player["playername"]
             player = players.get(name.lower())
             if player is None:
-                # Someone played who is not in our squad list (a guest, or a typo in a gamertag)
+                # Someone played who is not in our squad list (a guest or a former player)
                 self.stdout.write(self.style.WARNING(f"  Skipped unknown player: {name}"))
                 continue
 
@@ -90,3 +98,35 @@ class Command(BaseCommand):
 
         self.stdout.write(f"Imported: {match}")
         return True
+
+    def update_totals(self, players):
+        """Copy each player's season and career totals from EA onto his Player record."""
+        for prefix, career in (("season", False), ("career", True)):
+            try:
+                members = fetch_member_totals(career=career)
+            except EAError as exc:
+                self.stderr.write(self.style.ERROR(str(exc)))
+                continue
+
+            for member in members:
+                # EA's "name" is the gamertag, the same key we match on for matches
+                player = players.get(member["name"].lower())
+                if player is None:
+                    # A club member who is not in our squad list; ignore him
+                    continue
+
+                # setattr sets a field by its name as text, so this one block
+                # fills season_* on the first pass and career_* on the second
+                setattr(player, f"{prefix}_games", int(member["gamesPlayed"]))
+                setattr(player, f"{prefix}_goals", int(member["goals"]))
+                setattr(player, f"{prefix}_assists", int(member["assists"]))
+                setattr(player, f"{prefix}_rating", round(Decimal(member["ratingAve"] or "0"), 1))
+                setattr(player, f"{prefix}_motm", int(member["manOfTheMatch"]))
+
+        if players:
+            # Save every player in one database query instead of one query each
+            Player.objects.bulk_update(
+                players.values(),
+                [f"{prefix}_{stat}" for prefix in ("season", "career") for stat in self.TOTAL_STATS],
+            )
+        self.stdout.write("Updated player totals.")

@@ -1,18 +1,42 @@
 from django.utils import timezone
 from rest_framework import viewsets
+from rest_framework.decorators import action
+from rest_framework.response import Response
+
 from .models import NewsPost, Player, Trophy
 from .serializers import NewsPostSerializer, PlayerSerializer, TrophySerializer
 
 class PlayerViewSet(viewsets.ReadOnlyModelViewSet):
     """
     Public squad endpoints:
-      GET /api/players/      -> the whole squad
-      GET /api/players/3/    -> one player
+      GET /api/players/                          -> the squad with season and career totals
+      GET /api/players/3/                        -> one player
+      GET /api/players/leaderboard/?stat=goals   -> top 10 by goals, assists, rating or motm
     """
 
-    # Only current squad members; players who left are hidden
-    queryset = Player.objects.filter(is_active=True)
     serializer_class = PlayerSerializer
+    queryset = Player.objects.filter(is_active=True)
+
+    # The stats a leaderboard can be sorted by, and the field each one uses
+    LEADERBOARD_STATS = {
+        "goals": "season_goals",
+        "assists": "season_assists",
+        "rating": "season_rating",
+        "motm": "season_motm",
+    }
+
+    @action(detail=False)
+    def leaderboard(self, request):
+        stat = request.query_params.get("stat", "goals")
+        field = self.LEADERBOARD_STATS.get(stat, "goals")
+
+        top_players = (
+            self.get_queryset()
+            .filter(season_games__gt=0)       # leave out players who have not played
+            .order_by(f"-{field}", "shirt_number")[:10]
+        )
+        serializer = self.get_serializer(top_players, many=True)
+        return Response(serializer.data)
 
 class TrophyViewSet(viewsets.ReadOnlyModelViewSet):
     """GET /api/trophies/ and /api/trophies/?kind=team or individual"""
@@ -20,7 +44,7 @@ class TrophyViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = TrophySerializer
 
     def get_queryset(self):
-        # Fetch each trophy's player in the same query (the N+1 fix from last step)
+        # Fetch each trophy's player in the same query (the N+1 fix)
         queryset = Trophy.objects.select_related("player")
         kind = self.request.query_params.get("kind")
         if kind in Trophy.Kind.values:

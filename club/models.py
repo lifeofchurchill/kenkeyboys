@@ -50,6 +50,21 @@ class Player(models.Model):
     # Lets the captain hide a player who left without deleting his stats
     is_active = models.BooleanField(default=True)
     joined_on = models.DateField(auto_now_add=True)
+    
+    # Totals copied from EA on every import. editable=False keeps them out of the
+    # admin form, so nobody types over numbers that EA owns
+    season_games = models.PositiveIntegerField(default=0, editable=False)
+    season_goals = models.PositiveIntegerField(default=0, editable=False)
+    season_assists = models.PositiveIntegerField(default=0, editable=False)
+    season_rating = models.DecimalField(max_digits=3, decimal_places=1, default=0, editable=False)
+    season_motm = models.PositiveIntegerField(default=0, editable=False)
+
+    # The same five numbers for his whole time at the club
+    career_games = models.PositiveIntegerField(default=0, editable=False)
+    career_goals = models.PositiveIntegerField(default=0, editable=False)
+    career_assists = models.PositiveIntegerField(default=0, editable=False)
+    career_rating = models.DecimalField(max_digits=3, decimal_places=1, default=0, editable=False)
+    career_motm = models.PositiveIntegerField(default=0, editable=False)
 
     class Meta:
         # Default order whenever players are listed: by shirt number

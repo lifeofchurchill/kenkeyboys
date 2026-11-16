@@ -4,14 +4,12 @@ from .models import NewsPost, Player, Trophy
 
 
 class PlayerSerializer(serializers.ModelSerializer):
-    """Turns a Player into JSON for the website and app."""
+    """Turns a Player into JSON for the website and app, with EA's totals."""
 
-    # The model stores "ST"; this adds the readable label "Striker" alongside it
     position_label = serializers.CharField(source="get_position_display", read_only=True)
 
     class Meta:
         model = Player
-        # Only these fields are exposed. is_active and user stay private
         fields = [
             "id",
             "display_name",
@@ -20,10 +18,19 @@ class PlayerSerializer(serializers.ModelSerializer):
             "position_label",
             "shirt_number",
             "platform",
+            "photo",
             "joined_on",
-            "Photo",
+            "season_games",
+            "season_goals",
+            "season_assists",
+            "season_rating",
+            "season_motm",
+            "career_games",
+            "career_goals",
+            "career_assists",
+            "career_rating",
+            "career_motm",
         ]
-
 class TrophySerializer(serializers.ModelSerializer):
     # Show the winner's name for individual awards; null for team trophies
     player_name = serializers.CharField(source="player.display_name", read_only=True, default=None)
