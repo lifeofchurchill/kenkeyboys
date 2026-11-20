@@ -7,6 +7,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/", include("club.urls")),
     path("api/", include("matches.urls")),
+    path("", include("website.urls")),
 ]
 
 # In development only, let Django hand out uploaded images.

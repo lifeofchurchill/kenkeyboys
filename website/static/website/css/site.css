@@ -1,0 +1,256 @@
+/* ==========================================================================
+   Kenkey Boys FC: site styles
+   Colours, fonts and shadows are defined once as variables at the top,
+   so changing one value here updates every page on the site.
+   ========================================================================== */
+
+:root {
+  /* Colours */
+  --white: #FFFFFF;
+  --ink: #1A1611;          /* main text */
+  --ink-soft: #4A443A;     /* secondary text */
+  --muted: #6B6558;        /* captions and small labels */
+  --line: #E4DFD3;         /* borders */
+  --line-strong: #8F8779;  /* outlined buttons */
+  --panel: #FAF8F3;        /* card backgrounds */
+  --band: #F3F0E8;         /* alternate section background */
+  --gold: #D4AF5A;         /* buttons and fills, taken from the crest */
+  --gold-hover: #E6C778;
+  --gold-text: #8A6A1F;    /* a darker gold that is readable on white */
+
+  /* Fonts */
+  --font-display: "Alfa Slab One", Georgia, serif;
+  --font-body: "Barlow", system-ui, sans-serif;
+  --font-label: "Barlow Condensed", "Arial Narrow", sans-serif;
+
+  /* Shape and depth */
+  --radius: 10px;
+  --shadow: 0 14px 36px rgba(26, 22, 17, 0.07);
+  --shadow-hover: 0 18px 40px rgba(26, 22, 17, 0.14);
+}
+
+/* ---------- Base ---------- */
+*, *::before, *::after { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background: var(--white);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 17px;
+  line-height: 1.5;
+}
+
+img { display: block; max-width: 100%; }
+
+a { color: var(--gold-text); }
+a:hover { color: var(--ink); }
+
+/* Keyboard users get a clear gold outline on whatever they have tabbed to */
+:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+
+/* Centres content and keeps it from stretching too wide on big screens */
+.container { max-width: 1200px; margin: 0 auto; padding-inline: 24px; }
+
+/* Vertical spacing only, so it can sit on the same element as .container */
+.section { padding-block: 72px; }
+
+/* Hidden above the page until a keyboard user tabs onto it */
+.skip-link {
+  position: absolute; left: 16px; top: -60px; z-index: 30;
+  background: var(--ink); color: var(--white);
+  padding: 10px 16px; border-radius: 4px;
+}
+.skip-link:focus { top: 12px; color: var(--white); }
+
+/* ---------- Text helpers ---------- */
+.eyebrow {
+  display: flex; align-items: center; gap: 12px; margin: 0;
+  font-family: var(--font-label); font-weight: 600; font-size: 17px;
+  letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold-text);
+}
+/* The short gold line before every eyebrow label */
+.eyebrow::before { content: ""; width: 36px; height: 2px; background: var(--gold); }
+
+.lead { margin: 0; max-width: 520px; font-size: 20px; color: var(--ink-soft); }
+.gold-text { color: var(--gold-text); }
+
+/* ---------- Buttons ---------- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 44px; padding: 10px 20px;
+  border: 1px solid transparent; border-radius: 4px;
+  font-family: var(--font-label); font-weight: 700; font-size: 18px;
+  letter-spacing: 0.08em; text-transform: uppercase; text-decoration: none;
+  cursor: pointer;
+  transition: transform .15s ease, background .15s ease, border-color .15s ease, color .15s ease;
+}
+.btn--gold { background: var(--gold); color: var(--ink); }
+.btn--gold:hover { background: var(--gold-hover); color: var(--ink); transform: translateY(-2px); }
+.btn--ghost { background: transparent; color: var(--ink); border-color: var(--line-strong); }
+.btn--ghost:hover { border-color: var(--gold); color: var(--gold-text); }
+.btn--lg { padding: 15px 28px; font-size: 20px; }
+.button-row { display: flex; flex-wrap: wrap; gap: 14px; }
+
+/* ---------- Header and menu ---------- */
+.site-header {
+  position: sticky; top: 0; z-index: 20;          /* stays pinned while scrolling */
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(10px);                     /* the frosted-glass effect */
+  border-bottom: 1px solid var(--line);
+}
+.site-header__inner {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+  gap: 16px; padding-block: 14px;
+}
+.brand {
+  display: flex; align-items: center; gap: 12px;
+  color: var(--ink); text-decoration: none;
+  font-family: var(--font-display); font-size: 20px; letter-spacing: 0.04em; text-transform: uppercase;
+}
+.brand:hover { color: var(--ink); }
+.brand img { width: 42px; height: 56px; object-fit: cover; border-radius: 6px; }
+
+.site-nav {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px 28px;
+  font-family: var(--font-label); font-weight: 600; font-size: 18px;
+  letter-spacing: 0.08em; text-transform: uppercase;
+}
+.site-nav a:not(.btn) {
+  padding: 10px 0; color: var(--ink); text-decoration: none;
+  border-bottom: 3px solid transparent;
+}
+.site-nav a:not(.btn):hover { color: var(--gold-text); }
+/* The current page's link gets a gold underline. The same attribute
+   tells screen readers which page the visitor is on */
+.site-nav a[aria-current="page"] { border-bottom-color: var(--gold); }
+
+/* ---------- Page band: the title strip at the top of inner pages ---------- */
+.page-band {
+  position: relative; overflow: hidden;
+  padding-block: 56px;
+  background: var(--band); border-bottom: 1px solid var(--line);
+}
+/* Faint diagonal stripes behind the title */
+.page-band::before {
+  content: ""; position: absolute; inset: 0;
+  background-image: repeating-linear-gradient(135deg, rgba(212, 175, 90, 0.10) 0 1px, transparent 1px 22px);
+}
+.page-band .container { position: relative; display: flex; flex-direction: column; gap: 12px; }
+.page-band__title {
+  margin: 0;
+  font-family: var(--font-display); font-weight: 400;
+  font-size: clamp(40px, 6vw, 76px); line-height: 1.02; text-transform: uppercase;
+  animation: rise .7s ease .15s both;
+}
+
+/* ---------- Home: hero ---------- */
+.hero {
+  position: relative; overflow: hidden;
+  background: radial-gradient(circle at 78% 45%, #F6ECD2 0%, var(--white) 55%);
+  border-bottom: 1px solid var(--line);
+}
+.hero__stripes {
+  position: absolute; inset: 0;
+  background-image: repeating-linear-gradient(135deg, rgba(212, 175, 90, 0.05) 0 1px, transparent 1px 22px);
+}
+/* The giant outlined club name drifting slowly behind everything */
+.hero__outline {
+  position: absolute; left: 0; bottom: -40px;
+  display: flex; width: max-content; white-space: nowrap; pointer-events: none;
+  font-family: var(--font-display); font-size: 220px; line-height: 1; text-transform: uppercase;
+  color: transparent; -webkit-text-stroke: 1.5px rgba(138, 106, 31, 0.16);
+  animation: marquee 60s linear infinite;
+}
+.hero__outline span { padding-right: 80px; }
+
+.hero__inner {
+  position: relative;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 48px;
+  padding-block: 72px 80px;
+}
+.hero__text { flex: 1 1 520px; min-width: 0; display: flex; flex-direction: column; gap: 24px; }
+.hero__title {
+  margin: 0;
+  font-family: var(--font-display); font-weight: 400;
+  font-size: clamp(42px, 6.4vw, 88px); line-height: 1.02; text-transform: uppercase;
+}
+.hero__title span { display: block; }
+
+.hero__crest {
+  position: relative; flex: 0 1 380px; min-width: 240px; margin: 0 auto;
+  animation: float 6s ease-in-out infinite;
+}
+.hero__crest img {
+  position: relative; width: 100%; aspect-ratio: 3 / 4; object-fit: cover;
+  border-radius: 14px;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.25), 0 0 0 1px #D9D4C7;
+}
+/* The slowly turning dashed ring behind the crest */
+.hero__ring {
+  position: absolute; left: 50%; top: 50%; width: 128%; aspect-ratio: 1;
+  translate: -50% -50%;
+  border: 2px dashed rgba(212, 175, 90, 0.7); border-radius: 50%;
+  animation: spin 50s linear infinite;
+}
+
+/* Headline lines rising in one after the other */
+.rise { animation: rise .7s ease both; }
+.rise--1 { animation-delay: .15s; }
+.rise--2 { animation-delay: .4s; }
+
+/* ---------- Home: gold ticker band ---------- */
+.ticker {
+  overflow: hidden; white-space: nowrap;
+  padding-block: 14px;
+  background: var(--gold); color: var(--ink);
+  font-family: var(--font-label); font-weight: 700; font-size: 20px;
+  letter-spacing: 0.16em; text-transform: uppercase;
+}
+.ticker__track { display: flex; width: max-content; animation: marquee 32s linear infinite; }
+.ticker__group { display: flex; }
+.ticker__group span { display: flex; align-items: center; gap: 28px; padding-right: 28px; }
+/* A small diamond between phrases */
+.ticker__group span::after {
+  content: ""; width: 8px; height: 8px; background: var(--ink); transform: rotate(45deg);
+}
+
+/* ---------- Footer ---------- */
+.site-footer { background: var(--band); border-top: 1px solid var(--line); }
+.site-footer__inner {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+  gap: 20px; padding-block: 36px;
+}
+.site-footer__motto {
+  display: flex; align-items: center; gap: 12px;
+  font-family: var(--font-label); font-weight: 600;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-soft);
+}
+.site-footer__motto img { width: 36px; height: 48px; object-fit: cover; border-radius: 4px; }
+.site-footer small { font-size: 15px; color: var(--muted); }
+
+/* ---------- Animations ---------- */
+@keyframes rise    { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+@keyframes float   { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+@keyframes spin    { to { transform: rotate(360deg); } }
+/* Moves content left by half its width. Because every moving strip holds
+   two identical copies, the loop restarts without a visible jump */
+@keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+/* ---------- Phones ---------- */
+@media (max-width: 640px) {
+  .site-nav { gap: 4px 18px; font-size: 16px; }
+  .hero__inner { padding-block: 48px 56px; }
+  .section { padding-block: 56px; }
+}
+
+/* Visitors who have asked their device for less motion get a still page */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}

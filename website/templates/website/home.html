@@ -1,0 +1,42 @@
+{% extends "website/base.html" %}
+{% load static %}
+
+{% block content %}
+<section class="hero">
+  {# Decorations: aria-hidden tells screen readers to skip them #}
+  <div class="hero__stripes" aria-hidden="true"></div>
+  <div class="hero__outline" aria-hidden="true">
+    <span>Kenkey Boys</span><span>Kenkey Boys</span><span>Kenkey Boys</span><span>Kenkey Boys</span>
+  </div>
+
+  <div class="container hero__inner">
+    <div class="hero__text">
+      <p class="eyebrow rise">FC 27 Pro Clubs · Est. 2024</p>
+      <h1 class="hero__title">
+        <span class="rise rise--1">Rooted in heritage.</span>
+        <span class="rise rise--2 gold-text">Driven by passion.</span>
+      </h1>
+      <p class="lead">The official home of Kenkey Boys Football Club. Fixtures, results, the squad and every trophy we lift, all in one place.</p>
+      <div class="button-row">
+        <a class="btn btn--gold btn--lg" href="{% url 'website:players' %}">Meet the squad</a>
+        <a class="btn btn--ghost btn--lg" href="{% url 'website:matches' %}">Fixtures &amp; results</a>
+      </div>
+    </div>
+
+    <div class="hero__crest">
+      <div class="hero__ring" aria-hidden="true"></div>
+      <img src="{% static 'website/img/crest.jpg' %}"
+           alt="Kenkey Boys Football Club crest: three boys playing football by a lighthouse, with the motto Rooted in Heritage, Driven by Passion"
+           width="380" height="507">
+    </div>
+  </div>
+</section>
+
+{# Two identical groups inside the track, so the scrolling loop has no visible seam #}
+<div class="ticker" aria-hidden="true">
+  <div class="ticker__track">
+    <div class="ticker__group">{% for phrase in ticker %}<span>{{ phrase }}</span>{% endfor %}</div>
+    <div class="ticker__group">{% for phrase in ticker %}<span>{{ phrase }}</span>{% endfor %}</div>
+  </div>
+</div>
+{% endblock %}

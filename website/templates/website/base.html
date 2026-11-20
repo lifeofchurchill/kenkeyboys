@@ -1,0 +1,60 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  {# Makes the page fit phone screens instead of showing a shrunken desktop page #}
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {# Each page can replace this by filling in its own "title" block #}
+  <title>{% block title %}Kenkey Boys FC · Rooted in heritage, driven by passion{% endblock %}</title>
+  <meta name="description" content="Kenkey Boys Football Club, an FC 27 Pro Clubs team. Fixtures, results, squad and honours.">
+
+  {# Fonts: Alfa Slab One for headlines, Barlow for text, Barlow Condensed for labels #}
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&display=swap">
+
+  {# {% static %} turns a path inside the static folders into its real web address #}
+  <link rel="icon" href="{% static 'website/img/crest.jpg' %}">
+  <link rel="stylesheet" href="{% static 'website/css/site.css' %}">
+</head>
+<body>
+  {# Lets keyboard users jump past the menu straight to the content #}
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="container site-header__inner">
+      <a class="brand" href="{% url 'website:home' %}">
+        <img src="{% static 'website/img/crest.jpg' %}" alt="Kenkey Boys Football Club crest" width="42" height="56">
+        <span>Kenkey Boys</span>
+      </a>
+
+      {# active_page is sent by each view and marks which link is the current page #}
+      <nav class="site-nav" aria-label="Main">
+        <a href="{% url 'website:home' %}" {% if active_page == "home" %}aria-current="page"{% endif %}>Home</a>
+        <a href="{% url 'website:matches' %}" {% if active_page == "matches" %}aria-current="page"{% endif %}>Matches</a>
+        <a href="{% url 'website:players' %}" {% if active_page == "players" %}aria-current="page"{% endif %}>Squad</a>
+        <a href="{% url 'website:news' %}" {% if active_page == "news" %}aria-current="page"{% endif %}>News</a>
+        <a href="{% url 'website:honours' %}" {% if active_page == "honours" %}aria-current="page"{% endif %}>Honours</a>
+        <a class="btn btn--gold" href="{% url 'website:home' %}#join">Join the club</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    {# Every page puts its own content into this block #}
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="site-footer">
+    <div class="container site-footer__inner">
+      <div class="site-footer__motto">
+        <img src="{% static 'website/img/crest.jpg' %}" alt="" width="36" height="48">
+        <span>Rooted in heritage, driven by passion</span>
+      </div>
+      {# {% now "Y" %} prints the current year, so the footer never goes out of date #}
+      <small>&copy; {% now "Y" %} Kenkey Boys Football Club · Est. 2026</small>
+    </div>
+  </footer>
+</body>
+</html>
