@@ -124,3 +124,30 @@ class NewsPost(models.Model):
 
     def __str__(self):
         return self.title
+
+class TrialRequest(models.Model):
+    """A request from a visitor who wants to try out for the club."""
+
+    class Status(models.TextChoices):
+        NEW = "new", "New"
+        INVITED = "invited", "Invited to trial"
+        ACCEPTED = "accepted", "Accepted"
+        DECLINED = "declined", "Declined"
+
+    gamertag = models.CharField(max_length=50)
+    # Reuse the choices already defined on Player so both stay in step
+    position = models.CharField(max_length=3, choices=Player.Position.choices)
+    platform = models.CharField(max_length=4, choices=Player.Platform.choices)
+    # Optional note from the applicant
+    message = models.TextField(max_length=500, blank=True)
+
+    # Set by the captain in the admin, never by the visitor
+    status = models.CharField(max_length=10, choices=Status.choices, default=Status.NEW)
+    # Filled in automatically at the moment the request arrives
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.gamertag} ({self.position}) - {self.get_status_display()}"

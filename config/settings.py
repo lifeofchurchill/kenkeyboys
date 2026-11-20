@@ -141,3 +141,12 @@ MEDIA_ROOT = BASE_DIR / "media"
 EA_CLUB_ID = "78431"          # replace with your clubId from step 1
 EA_PLATFORM = "common-gen5"    # current-gen crossplay: PS5, Xbox Series, PC
 EA_SEASON = "FC 27"            # label used for auto-created competitions
+
+REST_FRAMEWORK = {
+    # Lets individual views opt in to a named rate limit
+    "DEFAULT_THROTTLE_CLASSES": ["rest_framework.throttling.ScopedRateThrottle"],
+    "DEFAULT_THROTTLE_RATES": {
+        # At most 5 trial requests per hour from one visitor (identified by IP address)
+        "trials": "5/hour",
+    },
+}

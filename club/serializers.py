@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import NewsPost, Player, Trophy
+from .models import NewsPost, Player, Trophy, TrialRequest
 
 
 class PlayerSerializer(serializers.ModelSerializer):
@@ -46,3 +46,13 @@ class NewsPostSerializer(serializers.ModelSerializer):
     class Meta:
         model = NewsPost
         fields = ["id", "title", "category", "category_label", "summary", "body", "image", "published_at"]
+
+
+class TrialRequestSerializer(serializers.ModelSerializer):
+    """Accepts a trial request from the website form."""
+
+    class Meta:
+        model = TrialRequest
+        # Only these four can be sent. "status" is left out on purpose,
+        # so nobody can submit a request already marked "accepted"
+        fields = ["gamertag", "position", "platform", "message"]

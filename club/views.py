@@ -1,10 +1,11 @@
 from django.utils import timezone
-from rest_framework import viewsets
+from rest_framework import mixins, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from .models import NewsPost, Player, Trophy
-from .serializers import NewsPostSerializer, PlayerSerializer, TrophySerializer
+
+from .models import NewsPost, Player, Trophy, TrialRequest
+from .serializers import NewsPostSerializer, PlayerSerializer, TrialRequestSerializer, TrophySerializer
 
 class PlayerViewSet(viewsets.ReadOnlyModelViewSet):
     """
@@ -64,3 +65,14 @@ class NewsPostViewSet(viewsets.ReadOnlyModelViewSet):
         if category in NewsPost.Category.values:
             queryset = queryset.filter(category=category)
         return queryset
+
+class TrialRequestViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
+    """
+    POST /api/trials/  -> submit a trial request.
+    Create-only: there is no way to list or read other people's requests here.
+    """
+
+    queryset = TrialRequest.objects.all()
+    serializer_class = TrialRequestSerializer
+    # Apply the "trials" rate limit defined in settings
+    throttle_scope = "trials"
