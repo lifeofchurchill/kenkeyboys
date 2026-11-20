@@ -2,6 +2,8 @@
 {% load static %}
 
 {% block content %}
+
+{# ---------- Hero (from Step 1; the squad button now jumps down this page) ---------- #}
 <section class="hero">
   {# Decorations: aria-hidden tells screen readers to skip them #}
   <div class="hero__stripes" aria-hidden="true"></div>
@@ -11,14 +13,14 @@
 
   <div class="container hero__inner">
     <div class="hero__text">
-      <p class="eyebrow rise">FC 27 Pro Clubs · Est. 2024</p>
+      <p class="eyebrow rise">FC 27 Pro Clubs · Est. 2026</p>
       <h1 class="hero__title">
         <span class="rise rise--1">Rooted in heritage.</span>
         <span class="rise rise--2 gold-text">Driven by passion.</span>
       </h1>
       <p class="lead">The official home of Kenkey Boys Football Club. Fixtures, results, the squad and every trophy we lift, all in one place.</p>
       <div class="button-row">
-        <a class="btn btn--gold btn--lg" href="{% url 'website:players' %}">Meet the squad</a>
+        <a class="btn btn--gold btn--lg" href="#squad">Meet the squad</a>
         <a class="btn btn--ghost btn--lg" href="{% url 'website:matches' %}">Fixtures &amp; results</a>
       </div>
     </div>
@@ -39,4 +41,142 @@
     <div class="ticker__group">{% for phrase in ticker %}<span>{{ phrase }}</span>{% endfor %}</div>
   </div>
 </div>
+
+{# ---------- Next match and recent form ---------- #}
+<section class="container section">
+  <div class="split">
+
+    <article class="card card--padded">
+      <div class="card__head">
+        <h2 class="card__label">Next match</h2>
+        {% if next_match %}
+          {# The date filter formats the time; "D j M, H:i" gives e.g. "Sat 22 Nov, 20:00" #}
+          <span class="live-dot">{{ next_match.competition.name }} · {{ next_match.kickoff|date:"D j M, H:i" }}</span>
+        {% endif %}
+      </div>
+
+      {% if next_match %}
+        <div class="versus">
+          <div class="versus__team">
+            <img src="{% static 'website/img/crest.jpg' %}" alt="" width="54" height="72">
+            <span>Kenkey Boys</span>
+          </div>
+          <span class="versus__vs">VS</span>
+          <div class="versus__team versus__team--away">
+            <span>{{ next_match.opponent }}</span>
+            {# The opponent's first letter in a circle, standing in for their crest #}
+            <span class="versus__initial" aria-hidden="true">{{ next_match.opponent|first|upper }}</span>
+          </div>
+        </div>
+
+        {# data-kickoff stores the exact kick-off time; the next step's JavaScript reads it to make the clock tick #}
+        <div class="countdown" role="timer" aria-label="Time until kick-off" data-kickoff="{{ next_match.kickoff|date:'c' }}">
+          {# Each item in countdown is a pair, e.g. ("Days", 3), unpacked into label and value #}
+          {% for label, value in countdown %}
+            <div class="countdown__unit">
+              {# 02d pads with a zero: 7 becomes "07" #}
+              <span class="countdown__value">{{ value|stringformat:"02d" }}</span>
+              <span class="countdown__label">{{ label }}</span>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="empty">No fixture scheduled yet. Check back soon.</p>
+      {% endif %}
+    </article>
+
+    <article class="card card--padded">
+      <div class="card__head">
+        <h2 class="card__label">Recent form</h2>
+      </div>
+
+      <ol class="form-list">
+        {% for match in recent_results %}
+          <li class="form-list__row">
+            {# match.result is "W", "D" or "L"; |lower turns it into the class result-badge--w, --d or --l #}
+            <span class="result-badge result-badge--{{ match.result|lower }}">{{ match.result }}</span>
+            <span class="form-list__opponent">vs {{ match.opponent }}</span>
+            <span class="form-list__score">{{ match.our_score }}–{{ match.opponent_score }}</span>
+          </li>
+        {% empty %}
+          {# {% empty %} runs instead of the loop when the list has nothing in it #}
+          <li class="empty">No results yet.</li>
+        {% endfor %}
+      </ol>
+
+      <a class="text-link" href="{% url 'website:matches' %}">All fixtures and results</a>
+    </article>
+
+  </div>
+</section>
+
+{# ---------- Squad ---------- #}
+<section id="squad" class="band">
+  <div class="container section">
+    <div class="section-head">
+      <p class="eyebrow">The squad</p>
+      <h2 class="section-title">One squad. One badge.</h2>
+    </div>
+
+    <div class="squad-grid">
+      {% for player in squad %}
+        <article class="player-card lift">
+          <div class="player-card__photo">
+            {% if player.photo %}
+              {# alt is empty because the name is written right below the photo #}
+              <img src="{{ player.photo.url }}" alt="" loading="lazy">
+            {% else %}
+              {# No photo yet: show the shirt number as an outline instead #}
+              <span aria-hidden="true">{{ player.shirt_number }}</span>
+            {% endif %}
+          </div>
+          <div class="player-card__body">
+            <div class="player-card__top">
+              <span class="player-card__number">{{ player.shirt_number }}</span>
+              <span class="tag">{{ player.position }}</span>
+            </div>
+            <h3 class="player-card__name">{{ player.display_name }}</h3>
+            {# Season totals copied from EA by the import command #}
+            <p class="player-card__stats">{{ player.season_games }} apps · {{ player.season_goals }} goals · {{ player.season_assists }} assists</p>
+          </div>
+        </article>
+      {% empty %}
+        <p class="empty">The squad list is being updated.</p>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+{# ---------- Honours ---------- #}
+<section class="container section">
+  <div class="section-head">
+    <p class="eyebrow">Trophy cabinet</p>
+    <h2 class="section-title">Honours</h2>
+  </div>
+
+  <div class="honours-grid">
+    {% for trophy in trophies %}
+      <article class="card card--padded trophy-card lift">
+        {% if trophy.image %}
+          <img class="trophy-card__image" src="{{ trophy.image.url }}" alt="">
+        {% else %}
+          <svg class="trophy-card__icon" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4zM7 6H4v1a3 3 0 0 0 3 3M17 6h3v1a3 3 0 0 1-3 3"/></svg>
+        {% endif %}
+        <h3 class="trophy-card__name">{{ trophy.name }}</h3>
+        {# Individual awards also show who won them #}
+        <p class="trophy-card__meta">{{ trophy.season }}{% if trophy.player %} · {{ trophy.player.display_name }}{% endif %}</p>
+      </article>
+    {% endfor %}
+
+    {# Always shown, even when the cabinet is empty #}
+    <article class="card card--padded trophy-card trophy-card--next">
+      <svg class="trophy-card__icon trophy-card__icon--muted" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+      <h3 class="trophy-card__name">Space for the next one</h3>
+      <p class="trophy-card__meta">The cabinet is never full.</p>
+    </article>
+  </div>
+
+  <a class="text-link" href="{% url 'website:honours' %}">Full trophy room</a>
+</section>
+
 {% endblock %}

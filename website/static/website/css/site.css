@@ -254,3 +254,176 @@ a:hover { color: var(--ink); }
     scroll-behavior: auto !important;
   }
 }
+
+/* ==========================================================================
+   Phase 6, Step 2: shared building blocks and home page sections
+   ========================================================================== */
+
+/* Sections reached by a # link stop below the pinned menu instead of under it */
+[id] { scroll-margin-top: 96px; }
+
+/* ---------- Section headings ---------- */
+.section-head { display: flex; flex-direction: column; gap: 8px; margin-bottom: 32px; }
+.section-title {
+  margin: 0;
+  font-family: var(--font-display); font-weight: 400;
+  font-size: clamp(32px, 4.4vw, 54px); line-height: 1.05; text-transform: uppercase;
+}
+
+/* A full-width tinted background, used on every other section */
+.band { background: var(--band); border-block: 1px solid var(--line); }
+
+/* ---------- Cards ---------- */
+.card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+.card--padded { display: flex; flex-direction: column; gap: 24px; padding: 32px; }
+.card__head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+.card__label {
+  margin: 0;
+  font-family: var(--font-label); font-weight: 700; font-size: 20px;
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--gold-text);
+}
+
+/* Add "lift" to any card to make it rise and catch a gold sheen on hover */
+.lift {
+  position: relative; overflow: hidden;
+  transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+}
+.lift::after {
+  content: ""; position: absolute; top: 0; bottom: 0; left: -60%; width: 40%;
+  background: linear-gradient(100deg, transparent, rgba(212, 175, 90, 0.3), transparent);
+  transform: skewX(-18deg); transition: left .6s ease; pointer-events: none;
+}
+.lift:hover { transform: translateY(-4px); border-color: var(--gold); box-shadow: var(--shadow-hover); }
+.lift:hover::after { left: 125%; }
+
+/* Two cards side by side; they stack once the screen is too narrow */
+.split { display: flex; flex-wrap: wrap; gap: 24px; }
+.split > :first-child { flex: 3 1 520px; min-width: 0; }
+.split > :last-child { flex: 2 1 340px; min-width: 0; }
+
+.empty { margin: 0; color: var(--muted); }
+.text-link {
+  font-family: var(--font-label); font-weight: 600; font-size: 17px;
+  letter-spacing: 0.08em; text-transform: uppercase;
+}
+.tag {
+  padding: 2px 8px;
+  border: 1px solid var(--line-strong); border-radius: 4px;
+  font-family: var(--font-label); font-weight: 700; font-size: 15px; letter-spacing: 0.12em;
+}
+
+/* ---------- Next match ---------- */
+.live-dot { display: flex; align-items: center; gap: 8px; font-size: 15px; color: var(--muted); }
+/* The blinking dot: a touch of the kit's blue */
+.live-dot::before {
+  content: ""; width: 8px; height: 8px; border-radius: 50%;
+  background: #5B8DEF; animation: pulse 1.6s infinite;
+}
+
+.versus { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 20px; }
+.versus__team {
+  flex: 1 1 180px; display: flex; align-items: center; gap: 14px;
+  font-family: var(--font-display); font-size: 26px; text-transform: uppercase;
+}
+.versus__team img { width: 54px; height: 72px; object-fit: cover; border-radius: 6px; }
+.versus__team--away { justify-content: flex-end; color: var(--ink-soft); }
+.versus__initial {
+  width: 56px; height: 56px; flex: none; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--band); border: 1px solid var(--line-strong);
+}
+.versus__vs {
+  font-family: var(--font-label); font-weight: 700; font-size: 22px;
+  letter-spacing: 0.1em; color: var(--muted);
+}
+
+.countdown { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.countdown__unit {
+  padding: 18px 8px; text-align: center;
+  background: var(--white); border: 1px solid var(--line); border-radius: 8px;
+}
+.countdown__value {
+  display: block;
+  font-family: var(--font-display); font-size: clamp(30px, 4.6vw, 54px); line-height: 1;
+  /* Every digit the same width, so numbers don't wobble as they change */
+  font-variant-numeric: tabular-nums;
+}
+.countdown__label {
+  display: block; margin-top: 8px;
+  font-family: var(--font-label); font-weight: 600; font-size: 15px;
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted);
+}
+
+/* ---------- Recent form ---------- */
+.form-list { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; }
+.form-list__row {
+  display: flex; align-items: center; gap: 14px;
+  padding: 10px 0; border-bottom: 1px solid var(--line);
+}
+.form-list__opponent { flex: 1; min-width: 0; color: var(--ink-soft); }
+.form-list__score { font-family: var(--font-display); font-size: 20px; }
+
+.result-badge {
+  width: 34px; height: 34px; flex: none;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid transparent; border-radius: 4px;
+  font-family: var(--font-label); font-weight: 700; font-size: 18px;
+}
+/* One look per result: win in gold, draw in stone, loss outlined */
+.result-badge--w { background: var(--gold); }
+.result-badge--d { background: var(--line); }
+.result-badge--l { background: var(--white); border-color: var(--line-strong); }
+
+/* ---------- Squad ---------- */
+.squad-grid {
+  display: grid; gap: 16px;
+  /* As many 200px-wide columns as fit; one column on the narrowest phones */
+  grid-template-columns: repeat(auto-fill, minmax(min(200px, 100%), 1fr));
+}
+.player-card {
+  display: flex; flex-direction: column;
+  background: var(--white); border: 1px solid var(--line); border-radius: var(--radius);
+}
+.player-card__photo {
+  aspect-ratio: 4 / 5;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--band); border-bottom: 1px solid var(--line);
+}
+.player-card__photo img { width: 100%; height: 100%; object-fit: cover; }
+.player-card__photo span {
+  font-family: var(--font-display); font-size: 96px; line-height: 1;
+  color: transparent; -webkit-text-stroke: 2px rgba(138, 106, 31, 0.35);
+}
+.player-card__body { display: flex; flex-direction: column; gap: 6px; padding: 16px; }
+.player-card__top { display: flex; align-items: center; justify-content: space-between; }
+.player-card__number { font-family: var(--font-display); font-size: 32px; line-height: 1; color: var(--gold-text); }
+.player-card__name {
+  margin: 0;
+  font-family: var(--font-label); font-weight: 700; font-size: 21px;
+  letter-spacing: 0.04em; text-transform: uppercase;
+}
+.player-card__stats { margin: 0; font-size: 14px; color: var(--muted); }
+
+/* ---------- Honours ---------- */
+.honours-grid {
+  display: grid; gap: 16px; margin-bottom: 24px;
+  grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr));
+}
+.trophy-card { gap: 14px; }
+.trophy-card__icon { color: var(--gold-text); }
+.trophy-card__icon--muted { color: var(--muted); }
+.trophy-card__image { width: 64px; height: 64px; object-fit: contain; }
+.trophy-card__name {
+  margin: 0;
+  font-family: var(--font-label); font-weight: 700; font-size: 24px;
+  letter-spacing: 0.04em; text-transform: uppercase;
+}
+.trophy-card__meta { margin: 0; color: var(--muted); }
+.trophy-card--next { border-style: dashed; border-color: var(--line-strong); box-shadow: none; }
+
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
