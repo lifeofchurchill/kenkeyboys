@@ -9,7 +9,6 @@ app_name = "website"
 
 def coming_soon(page, title):
     """A placeholder for a page we have not built yet."""
-    # TemplateView is Django's ready-made "just show this template" view
     return TemplateView.as_view(
         template_name="website/coming_soon.html",
         extra_context={"active_page": page, "page_title": title},
@@ -18,8 +17,10 @@ def coming_soon(page, title):
 
 urlpatterns = [
     path("", views.home, name="home"),
-    # Placeholders: each is swapped for a real view as we build that page.
-    # Defining them now means every menu link already works
+    # <int:pk> captures a whole number from the address and passes it to the view as pk.
+    # /news/7/ calls news_detail(request, pk=7); /news/abc/ never reaches the view at all
+    path("news/<int:pk>/", views.news_detail, name="news_detail"),
+    # Placeholders: each is swapped for a real view as we build that page
     path("matches/", coming_soon("matches", "Fixtures & results"), name="matches"),
     path("squad/", coming_soon("players", "The squad"), name="players"),
     path("news/", coming_soon("news", "News"), name="news"),

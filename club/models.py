@@ -73,6 +73,19 @@ class Player(models.Model):
     def __str__(self):
         return f"{self.shirt_number}. {self.display_name} ({self.position})"
 
+        # Which squad filter each position belongs to on the website
+    POSITION_GROUPS = {
+        "GK": "GK",
+        "RB": "DEF", "CB": "DEF", "LB": "DEF",
+        "CDM": "MID", "CM": "MID", "CAM": "MID",
+        "RW": "ATT", "LW": "ATT", "ST": "ATT",
+    }
+
+    @property
+    def position_group(self):
+        """GK, DEF, MID or ATT, worked out from the player's position."""
+        return self.POSITION_GROUPS.get(self.position, "MID")
+
 
 class Trophy(models.Model):
     """An honour in the trophy room: a team title or an individual award."""

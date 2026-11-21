@@ -51,11 +51,21 @@ a:hover { color: var(--ink); }
 /* Keyboard users get a clear gold outline on whatever they have tabbed to */
 :focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
 
+/* Let the hidden attribute beat every display rule below,
+   so JavaScript can reliably hide cards and controls */
+[hidden] { display: none !important; }
+
+/* Sections reached by a # link stop below the pinned menu instead of under it */
+[id] { scroll-margin-top: 96px; }
+
 /* Centres content and keeps it from stretching too wide on big screens */
 .container { max-width: 1200px; margin: 0 auto; padding-inline: 24px; }
 
 /* Vertical spacing only, so it can sit on the same element as .container */
 .section { padding-block: 72px; }
+
+/* A full-width tinted background, used on every other section */
+.band { background: var(--band); border-block: 1px solid var(--line); }
 
 /* Hidden above the page until a keyboard user tabs onto it */
 .skip-link {
@@ -65,7 +75,13 @@ a:hover { color: var(--ink); }
 }
 .skip-link:focus { top: 12px; color: var(--white); }
 
-/* ---------- Text helpers ---------- */
+/* Text only screen readers hear, such as which story a "Read more" opens */
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+/* ---------- Text ---------- */
 .eyebrow {
   display: flex; align-items: center; gap: 12px; margin: 0;
   font-family: var(--font-label); font-weight: 600; font-size: 17px;
@@ -76,6 +92,33 @@ a:hover { color: var(--ink); }
 
 .lead { margin: 0; max-width: 520px; font-size: 20px; color: var(--ink-soft); }
 .gold-text { color: var(--gold-text); }
+.empty { margin: 0; color: var(--muted); }
+
+.text-link {
+  font-family: var(--font-label); font-weight: 600; font-size: 17px;
+  letter-spacing: 0.08em; text-transform: uppercase;
+}
+
+.section-head { display: flex; flex-direction: column; gap: 8px; margin-bottom: 32px; }
+.section-title {
+  margin: 0;
+  font-family: var(--font-display); font-weight: 400;
+  font-size: clamp(32px, 4.4vw, 54px); line-height: 1.05; text-transform: uppercase;
+}
+
+/* A section heading with controls on its right; they wrap below on phones */
+.section-row {
+  display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between;
+  gap: 20px; margin-bottom: 32px;
+}
+.section-row .section-head { margin-bottom: 0; }
+
+.tag {
+  padding: 2px 8px;
+  border: 1px solid var(--line-strong); border-radius: 4px;
+  font-family: var(--font-label); font-weight: 700; font-size: 15px; letter-spacing: 0.12em;
+}
+.tag--gold { background: var(--gold); border-color: var(--gold); }
 
 /* ---------- Buttons ---------- */
 .btn {
@@ -93,6 +136,33 @@ a:hover { color: var(--ink); }
 .btn--ghost:hover { border-color: var(--gold); color: var(--gold-text); }
 .btn--lg { padding: 15px 28px; font-size: 20px; }
 .button-row { display: flex; flex-wrap: wrap; gap: 14px; }
+
+/* Rounded filter buttons, e.g. the squad position filter */
+.pill {
+  min-height: 44px; padding: 8px 18px;
+  background: transparent; color: var(--ink);
+  border: 1px solid var(--line-strong); border-radius: 99px;
+  font-family: var(--font-label); font-weight: 700; font-size: 17px;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  cursor: pointer; transition: background .15s ease, border-color .15s ease;
+}
+.pill:hover { border-color: var(--gold); }
+/* The selected filter. aria-pressed also tells screen readers which one is on */
+.pill[aria-pressed="true"] { background: var(--gold); border-color: var(--gold); }
+
+/* Round buttons that hold only an icon, e.g. the news arrows */
+.icon-btn {
+  width: 44px; height: 44px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--white); color: var(--ink);
+  border: 1px solid var(--line-strong); border-radius: 50%;
+  cursor: pointer; transition: border-color .15s ease, color .15s ease;
+}
+.icon-btn:hover { border-color: var(--gold); color: var(--gold-text); }
+/* The pause button shows a pause icon while playing and a play icon while paused */
+.icon-btn .icon-play { display: none; }
+.icon-btn[aria-pressed="true"] .icon-play { display: block; }
+.icon-btn[aria-pressed="true"] .icon-pause { display: none; }
 
 /* ---------- Header and menu ---------- */
 .site-header {
@@ -127,6 +197,20 @@ a:hover { color: var(--ink); }
    tells screen readers which page the visitor is on */
 .site-nav a[aria-current="page"] { border-bottom-color: var(--gold); }
 
+/* ---------- Footer ---------- */
+.site-footer { background: var(--band); border-top: 1px solid var(--line); }
+.site-footer__inner {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+  gap: 20px; padding-block: 36px;
+}
+.site-footer__motto {
+  display: flex; align-items: center; gap: 12px;
+  font-family: var(--font-label); font-weight: 600;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-soft);
+}
+.site-footer__motto img { width: 36px; height: 48px; object-fit: cover; border-radius: 4px; }
+.site-footer small { font-size: 15px; color: var(--muted); }
+
 /* ---------- Page band: the title strip at the top of inner pages ---------- */
 .page-band {
   position: relative; overflow: hidden;
@@ -146,6 +230,42 @@ a:hover { color: var(--ink); }
   animation: rise .7s ease .15s both;
 }
 
+/* ---------- Cards ---------- */
+.card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+.card--padded { display: flex; flex-direction: column; gap: 24px; padding: 32px; }
+.card__head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+.card__label {
+  margin: 0;
+  font-family: var(--font-label); font-weight: 700; font-size: 20px;
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--gold-text);
+}
+
+/* Add "lift" to any card to make it rise and catch a gold sheen on hover */
+.lift {
+  position: relative; overflow: hidden;
+  transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+}
+/* The sheen starts and ends well outside the card, so tall cards never show a sliver of it.
+   It only animates on the way in; on the way out it jumps back unseen */
+.lift::after {
+  content: ""; position: absolute; top: 0; bottom: 0; left: -150%; width: 40%;
+  background: linear-gradient(100deg, transparent, rgba(212, 175, 90, 0.3), transparent);
+  transform: skewX(-18deg); pointer-events: none;
+  transition: none;
+}
+.lift:hover { transform: translateY(-4px); border-color: var(--gold); box-shadow: var(--shadow-hover); }
+.lift:hover::after { left: 150%; transition: left .8s ease; }
+
+/* Two cards side by side; they stack once the screen is too narrow */
+.split { display: flex; flex-wrap: wrap; gap: 24px; }
+.split > :first-child { flex: 3 1 520px; min-width: 0; }
+.split > :last-child { flex: 2 1 340px; min-width: 0; }
+
 /* ---------- Home: hero ---------- */
 .hero {
   position: relative; overflow: hidden;
@@ -156,20 +276,10 @@ a:hover { color: var(--ink); }
   position: absolute; inset: 0;
   background-image: repeating-linear-gradient(135deg, rgba(212, 175, 90, 0.05) 0 1px, transparent 1px 22px);
 }
-/* The giant outlined club name drifting slowly behind everything */
-.hero__outline {
-  position: absolute; left: 0; bottom: -40px;
-  display: flex; width: max-content; white-space: nowrap; pointer-events: none;
-  font-family: var(--font-display); font-size: 220px; line-height: 1; text-transform: uppercase;
-  color: transparent; -webkit-text-stroke: 1.5px rgba(138, 106, 31, 0.16);
-  animation: marquee 60s linear infinite;
-}
-.hero__outline span { padding-right: 80px; }
-
 .hero__inner {
   position: relative;
   display: flex; flex-wrap: wrap; align-items: center; gap: 48px;
-  padding-block: 72px 80px;
+  padding-block: 72px 32px;
 }
 .hero__text { flex: 1 1 520px; min-width: 0; display: flex; flex-direction: column; gap: 24px; }
 .hero__title {
@@ -187,6 +297,7 @@ a:hover { color: var(--ink); }
   position: relative; width: 100%; aspect-ratio: 3 / 4; object-fit: cover;
   border-radius: 14px;
   box-shadow: 0 30px 80px rgba(0, 0, 0, 0.25), 0 0 0 1px #D9D4C7;
+  transition: transform .2s ease-out;   /* smooths the tilt between mouse positions */
 }
 /* The slowly turning dashed ring behind the crest */
 .hero__ring {
@@ -195,6 +306,18 @@ a:hover { color: var(--ink); }
   border: 2px dashed rgba(212, 175, 90, 0.7); border-radius: 50%;
   animation: spin 50s linear infinite;
 }
+
+/* The giant outlined club name drifting along the bottom of the hero.
+   It sits in the normal flow of the page, below the content, so it never runs behind any text */
+.hero__outline {
+  position: relative;
+  display: flex; width: max-content; white-space: nowrap; pointer-events: none;
+  margin-bottom: -0.18em;   /* trims the empty space under the letters */
+  font-family: var(--font-display); font-size: clamp(90px, 13vw, 180px); line-height: 1; text-transform: uppercase;
+  color: transparent; -webkit-text-stroke: 1.5px rgba(138, 106, 31, 0.16);
+  animation: marquee 60s linear infinite;
+}
+.hero__outline span { padding-right: 80px; }
 
 /* Headline lines rising in one after the other */
 .rise { animation: rise .7s ease both; }
@@ -217,107 +340,7 @@ a:hover { color: var(--ink); }
   content: ""; width: 8px; height: 8px; background: var(--ink); transform: rotate(45deg);
 }
 
-/* ---------- Footer ---------- */
-.site-footer { background: var(--band); border-top: 1px solid var(--line); }
-.site-footer__inner {
-  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
-  gap: 20px; padding-block: 36px;
-}
-.site-footer__motto {
-  display: flex; align-items: center; gap: 12px;
-  font-family: var(--font-label); font-weight: 600;
-  letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-soft);
-}
-.site-footer__motto img { width: 36px; height: 48px; object-fit: cover; border-radius: 4px; }
-.site-footer small { font-size: 15px; color: var(--muted); }
-
-/* ---------- Animations ---------- */
-@keyframes rise    { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
-@keyframes float   { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-@keyframes spin    { to { transform: rotate(360deg); } }
-/* Moves content left by half its width. Because every moving strip holds
-   two identical copies, the loop restarts without a visible jump */
-@keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-
-/* ---------- Phones ---------- */
-@media (max-width: 640px) {
-  .site-nav { gap: 4px 18px; font-size: 16px; }
-  .hero__inner { padding-block: 48px 56px; }
-  .section { padding-block: 56px; }
-}
-
-/* Visitors who have asked their device for less motion get a still page */
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation: none !important;
-    transition: none !important;
-    scroll-behavior: auto !important;
-  }
-}
-
-/* ==========================================================================
-   Phase 6, Step 2: shared building blocks and home page sections
-   ========================================================================== */
-
-/* Sections reached by a # link stop below the pinned menu instead of under it */
-[id] { scroll-margin-top: 96px; }
-
-/* ---------- Section headings ---------- */
-.section-head { display: flex; flex-direction: column; gap: 8px; margin-bottom: 32px; }
-.section-title {
-  margin: 0;
-  font-family: var(--font-display); font-weight: 400;
-  font-size: clamp(32px, 4.4vw, 54px); line-height: 1.05; text-transform: uppercase;
-}
-
-/* A full-width tinted background, used on every other section */
-.band { background: var(--band); border-block: 1px solid var(--line); }
-
-/* ---------- Cards ---------- */
-.card {
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-}
-.card--padded { display: flex; flex-direction: column; gap: 24px; padding: 32px; }
-.card__head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
-.card__label {
-  margin: 0;
-  font-family: var(--font-label); font-weight: 700; font-size: 20px;
-  letter-spacing: 0.16em; text-transform: uppercase; color: var(--gold-text);
-}
-
-/* Add "lift" to any card to make it rise and catch a gold sheen on hover */
-.lift {
-  position: relative; overflow: hidden;
-  transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
-}
-.lift::after {
-  content: ""; position: absolute; top: 0; bottom: 0; left: -60%; width: 40%;
-  background: linear-gradient(100deg, transparent, rgba(212, 175, 90, 0.3), transparent);
-  transform: skewX(-18deg); transition: left .6s ease; pointer-events: none;
-}
-.lift:hover { transform: translateY(-4px); border-color: var(--gold); box-shadow: var(--shadow-hover); }
-.lift:hover::after { left: 125%; }
-
-/* Two cards side by side; they stack once the screen is too narrow */
-.split { display: flex; flex-wrap: wrap; gap: 24px; }
-.split > :first-child { flex: 3 1 520px; min-width: 0; }
-.split > :last-child { flex: 2 1 340px; min-width: 0; }
-
-.empty { margin: 0; color: var(--muted); }
-.text-link {
-  font-family: var(--font-label); font-weight: 600; font-size: 17px;
-  letter-spacing: 0.08em; text-transform: uppercase;
-}
-.tag {
-  padding: 2px 8px;
-  border: 1px solid var(--line-strong); border-radius: 4px;
-  font-family: var(--font-label); font-weight: 700; font-size: 15px; letter-spacing: 0.12em;
-}
-
-/* ---------- Next match ---------- */
+/* ---------- Home: next match ---------- */
 .live-dot { display: flex; align-items: center; gap: 8px; font-size: 15px; color: var(--muted); }
 /* The blinking dot: a touch of the kit's blue */
 .live-dot::before {
@@ -359,7 +382,7 @@ a:hover { color: var(--ink); }
   letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted);
 }
 
-/* ---------- Recent form ---------- */
+/* ---------- Home: recent form ---------- */
 .form-list { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; }
 .form-list__row {
   display: flex; align-items: center; gap: 14px;
@@ -379,35 +402,69 @@ a:hover { color: var(--ink); }
 .result-badge--d { background: var(--line); }
 .result-badge--l { background: var(--white); border-color: var(--line-strong); }
 
-/* ---------- Squad ---------- */
-.squad-grid {
-  display: grid; gap: 16px;
-  /* As many 200px-wide columns as fit; one column on the narrowest phones */
-  grid-template-columns: repeat(auto-fill, minmax(min(200px, 100%), 1fr));
+/* ---------- News carousel ---------- */
+.carousel {
+  /* How long each story stays up. Change this one value to speed up or slow down */
+  --interval: 6s;
+  display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px;
 }
-.player-card {
-  display: flex; flex-direction: column;
-  background: var(--white); border: 1px solid var(--line); border-radius: var(--radius);
+.carousel__track {
+  display: flex;
+  overflow-x: auto;               /* without JavaScript, visitors can swipe through the stories */
+  scroll-snap-type: x mandatory;  /* and each swipe settles neatly on one whole story */
+  scroll-behavior: smooth;
+  background: var(--white);
+  border: 1px solid var(--line); border-radius: var(--radius);
+  box-shadow: var(--shadow);
 }
-.player-card__photo {
-  aspect-ratio: 4 / 5;
+/* Once JavaScript runs, the arrows and dots take over and the scrollbar is hidden */
+.carousel--live .carousel__track { scrollbar-width: none; }
+.carousel--live .carousel__track::-webkit-scrollbar { display: none; }
+
+.news-slide { flex: 0 0 100%; display: flex; flex-wrap: wrap; scroll-snap-align: start; }
+.news-slide__media {
+  position: relative; flex: 3 1 420px; min-height: 300px;
   display: flex; align-items: center; justify-content: center;
-  background: var(--band); border-bottom: 1px solid var(--line);
+  background: var(--band);
 }
-.player-card__photo img { width: 100%; height: 100%; object-fit: cover; }
-.player-card__photo span {
-  font-family: var(--font-display); font-size: 96px; line-height: 1;
-  color: transparent; -webkit-text-stroke: 2px rgba(138, 106, 31, 0.35);
+.news-slide__photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.news-slide__crest { width: 140px; border-radius: 8px; box-shadow: var(--shadow); }
+.news-slide__body {
+  flex: 2 1 320px; min-width: 0; padding: 36px;
+  display: flex; flex-direction: column; justify-content: center; align-items: flex-start; gap: 14px;
 }
-.player-card__body { display: flex; flex-direction: column; gap: 6px; padding: 16px; }
-.player-card__top { display: flex; align-items: center; justify-content: space-between; }
-.player-card__number { font-family: var(--font-display); font-size: 32px; line-height: 1; color: var(--gold-text); }
-.player-card__name {
+.news-slide__title {
   margin: 0;
-  font-family: var(--font-label); font-weight: 700; font-size: 21px;
-  letter-spacing: 0.04em; text-transform: uppercase;
+  font-family: var(--font-display); font-weight: 400;
+  font-size: clamp(26px, 3vw, 38px); line-height: 1.1; text-transform: uppercase;
 }
-.player-card__stats { margin: 0; font-size: 14px; color: var(--muted); }
+.news-slide__summary { margin: 0; color: var(--ink-soft); }
+.news-slide__date { margin: 0; font-size: 15px; color: var(--muted); }
+
+/* Dots, timer line and buttons under the stories */
+.carousel__bar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.carousel__dots { display: flex; }
+.carousel__dot {
+  width: 36px; height: 44px; padding: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: transparent; border: 0; cursor: pointer;
+}
+/* The visible dot is small, but the button around it is big enough to tap */
+.carousel__dot::before {
+  content: ""; width: 10px; height: 10px; border-radius: 99px;
+  background: var(--line-strong); transition: width .2s ease, background .2s ease;
+}
+/* The current story's dot stretches into a gold bar */
+.carousel__dot[aria-current="true"]::before { width: 26px; background: var(--gold); }
+
+.carousel__progress { flex: 1 1 120px; height: 3px; overflow: hidden; background: var(--line); border-radius: 99px; }
+.carousel__progress span {
+  display: block; height: 100%;
+  background: var(--gold);
+  transform: scaleX(0); transform-origin: left;
+}
+.carousel__progress span.is-running { animation: progress-fill var(--interval) linear forwards; }
+.carousel__buttons { display: flex; gap: 8px; }
 
 /* ---------- Honours ---------- */
 .honours-grid {
@@ -426,4 +483,99 @@ a:hover { color: var(--ink); }
 .trophy-card__meta { margin: 0; color: var(--muted); }
 .trophy-card--next { border-style: dashed; border-color: var(--line-strong); box-shadow: none; }
 
-@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+/* ---------- Squad (used on the squad page) ---------- */
+.squad-filter { display: flex; flex-wrap: wrap; gap: 8px; }
+.squad-grid {
+  display: grid; gap: 16px;
+  /* As many 200px-wide columns as fit; one column on the narrowest phones */
+  grid-template-columns: repeat(auto-fill, minmax(min(200px, 100%), 1fr));
+}
+.player-card {
+  display: flex; flex-direction: column;
+  background: var(--white); border: 1px solid var(--line); border-radius: var(--radius);
+}
+.player-card__photo {
+  aspect-ratio: 4 / 5;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--band); border-bottom: 1px solid var(--line);
+}
+.player-card__photo img { width: 100%; height: 100%; object-fit: cover; }
+/* Players without a photo show their shirt number as an outline instead */
+.player-card__photo span {
+  font-family: var(--font-display); font-size: 96px; line-height: 1;
+  color: transparent; -webkit-text-stroke: 2px rgba(138, 106, 31, 0.35);
+}
+.player-card__body { display: flex; flex-direction: column; gap: 6px; padding: 16px; }
+.player-card__top { display: flex; align-items: center; justify-content: space-between; }
+.player-card__number { font-family: var(--font-display); font-size: 32px; line-height: 1; color: var(--gold-text); }
+.player-card__name {
+  margin: 0;
+  font-family: var(--font-label); font-weight: 700; font-size: 21px;
+  letter-spacing: 0.04em; text-transform: uppercase;
+}
+.player-card__stats { margin: 0; font-size: 14px; color: var(--muted); }
+
+/* ---------- Article page ---------- */
+.back-link {
+  display: inline-flex; align-items: center; gap: 8px; align-self: flex-start; min-height: 44px;
+  font-family: var(--font-label); font-weight: 600; font-size: 16px;
+  letter-spacing: 0.08em; text-transform: uppercase; text-decoration: none;
+}
+.article-title { max-width: 900px; font-size: clamp(32px, 4.6vw, 56px); }
+.article-date { margin: 0; color: var(--muted); }
+
+/* A narrower column: long lines of text are hard to read */
+.article { max-width: 760px; padding-block: 48px 72px; display: flex; flex-direction: column; gap: 28px; }
+.article__image { width: 100%; border-radius: var(--radius); box-shadow: var(--shadow); }
+.article__summary { margin: 0; font-size: 22px; font-weight: 500; line-height: 1.45; }
+.article__body { font-size: 18px; line-height: 1.7; color: var(--ink-soft); }
+.article__body p { margin: 0 0 1.2em; }
+
+/* "More news" cards under an article */
+.news-grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr)); }
+.news-card {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 10px; padding: 24px;
+  background: var(--white); color: var(--ink); text-decoration: none;
+  border: 1px solid var(--line); border-radius: var(--radius);
+}
+.news-card:hover { color: var(--ink); }
+.news-card__title { margin: 0; font-size: 20px; font-weight: 700; line-height: 1.25; }
+.news-card__date { margin: 0; font-size: 15px; color: var(--muted); }
+
+/* ---------- Scroll reveals ---------- */
+/* These only apply once site.js adds "reveals-on" to the page,
+   so with no JavaScript every section simply stays visible */
+.reveals-on .reveal {
+  opacity: 0;
+  transform: translateY(32px);
+  transition: opacity .8s ease, transform .8s cubic-bezier(.2, .7, .2, 1);
+}
+.reveals-on .reveal.is-visible { opacity: 1; transform: none; }
+.reveals-on .reveal--delay { transition-delay: .15s; }
+
+/* ---------- Animations ---------- */
+@keyframes rise          { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+@keyframes float         { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+@keyframes spin          { to { transform: rotate(360deg); } }
+@keyframes pulse         { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+@keyframes progress-fill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+/* Moves content left by half its width. Because every moving strip holds
+   two identical copies, the loop restarts without a visible jump */
+@keyframes marquee       { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+/* ---------- Phones ---------- */
+@media (max-width: 640px) {
+  .site-nav { gap: 4px 18px; font-size: 16px; }
+  .hero__inner { padding-block: 48px 24px; }
+  .section { padding-block: 56px; }
+}
+
+/* ---------- Less motion ---------- */
+/* Visitors who have asked their device for less motion get a still page */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
