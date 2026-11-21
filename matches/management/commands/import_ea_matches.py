@@ -1,83 +1,166 @@
-from datetime import datetime, timezone as dt_timezone
+from datetime import datetime, timedelta, timezone as dt_timezone
 from decimal import Decimal
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.db import transaction
+from django.utils import timezone
 
 from club.models import Player
 from matches.ea import EAError, fetch_matches, fetch_member_totals
-from matches.models import Competition, Match, PlayerMatchStat
+from matches.models import Match, PlayerMatchStat
 
 
 class Command(BaseCommand):
-    help = "Import recent matches, player stats and season/career totals from EA."
+    help = "Fill in results for the captain's official fixtures from EA, and update player totals."
 
-    # EA's match types and the competition each one is filed under
-    MATCH_TYPES = {
-        "leagueMatch": "Clubs League",
-        "playoffMatch": "Clubs Playoffs",
-        "friendlyMatch": "Friendlies",
-    }
+    # Every kind of EA match is checked: an official game could be played as any of them
+    MATCH_TYPES = ("friendlyMatch", "leagueMatch", "playoffMatch")
 
     # The five totals EA gives us for each member
     TOTAL_STATS = ("games", "goals", "assists", "rating", "motm")
+
+    # An EA match counts for a fixture if it was played from 1 hour before kick-off...
+    EARLIEST = timedelta(hours=1)
+    # ...up to 12 hours after it, which leaves room for a replay later that night
+    LATEST = timedelta(hours=12)
+
+    def add_arguments(self, parser):
+        # Lets you run e.g. "python manage.py import_ea_matches --days 10"
+        # to look further back than usual, for instance after a week away
+        parser.add_argument(
+            "--days",
+            type=int,
+            default=3,
+            help="How many days after kick-off a fixture keeps being checked (default 3).",
+        )
 
     def handle(self, *args, **options):
         our_id = str(settings.EA_CLUB_ID)
         # Look players up by gamertag, ignoring upper/lower case
         players = {p.gamertag.lower(): p for p in Player.objects.all()}
-        imported = 0
 
-        # Part 1: recent matches and who did what in each one
-        for match_type, competition_name in self.MATCH_TYPES.items():
+        # Part 1: fill in the results of the captain's fixtures
+        ea_matches = self.fetch_all_matches()
+        updated = 0
+        for fixture in self.fixtures_to_check(options["days"]):
+            if self.update_fixture(fixture, ea_matches, our_id, players):
+                updated += 1
+
+        # Part 2: each player's overall season and career totals from EA
+        self.update_totals(players)
+
+        self.stdout.write(self.style.SUCCESS(f"Updated {updated} fixture(s)."))
+
+    def fetch_all_matches(self):
+        """Every recent match EA has for the club, of every type, in one list."""
+        matches = []
+        for match_type in self.MATCH_TYPES:
             try:
-                raw_matches = fetch_matches(match_type)
+                matches.extend(fetch_matches(match_type))
             except EAError as exc:
                 # One failing type should not stop the others
                 self.stderr.write(self.style.ERROR(str(exc)))
-                continue
+        return matches
 
-            competition, _ = Competition.objects.get_or_create(
-                name=competition_name, season=settings.EA_SEASON
+    def fixtures_to_check(self, days):
+        """The captain's fixtures that have kicked off recently and are not confirmed."""
+        now = timezone.now()
+        return (
+            Match.objects.filter(
+                result_confirmed=False,
+                kickoff__lte=now,                          # has kicked off
+                kickoff__gte=now - timedelta(days=days),   # but not too long ago
             )
-            for raw in raw_matches:
-                if self.import_match(raw, competition, our_id, players):
-                    imported += 1
-
-        # Part 2: each player's full season and career totals
-        self.update_totals(players)
-
-        self.stdout.write(self.style.SUCCESS(f"Imported {imported} new match(es)."))
-
-    # atomic: the match and all its stat lines are saved together or not at all,
-    # so a crash halfway never leaves a match with half a team sheet
-    @transaction.atomic
-    def import_match(self, raw, competition, our_id, players):
-        """Save one match from EA. Returns True if it was new, False if we already had it."""
-        ea_id = str(raw["matchId"])
-
-        # Already imported: skip it, which also preserves any edits the captain made
-        if Match.objects.filter(ea_match_id=ea_id).exists():
-            return False
-
-        clubs = raw["clubs"]
-        ours = clubs[our_id]
-        # The other key in "clubs" is the opponent
-        opponent = next(club for club_id, club in clubs.items() if club_id != our_id)
-
-        match = Match.objects.create(
-            ea_match_id=ea_id,
-            competition=competition,
-            opponent=opponent.get("details", {}).get("name", "Unknown club"),
-            # EA sends seconds since 1970 in UTC; convert to a proper date and time
-            kickoff=datetime.fromtimestamp(int(raw["timestamp"]), tz=dt_timezone.utc),
-            status=Match.Status.FINISHED,
-            # EA sends numbers as text ("3"), so convert them
-            our_score=int(ours["goals"]),
-            opponent_score=int(opponent["goals"]),
+            .exclude(status=Match.Status.CANCELLED)
+            # Finished but never linked to EA means the captain typed the result
+            # in himself: leave it alone
+            .exclude(status=Match.Status.FINISHED, ea_match_id__isnull=True)
+            .order_by("kickoff")
         )
 
+    def window_end(self, fixture):
+        """The latest time an EA match can count for this fixture."""
+        end = fixture.kickoff + self.LATEST
+        # If we meet the same club again soon after (e.g. a second leg),
+        # stop looking just before that game, so the two results never get mixed up
+        next_meeting = (
+            Match.objects.filter(opponent__iexact=fixture.opponent, kickoff__gt=fixture.kickoff)
+            .order_by("kickoff")
+            .first()
+        )
+        if next_meeting:
+            end = min(end, next_meeting.kickoff - self.EARLIEST)
+        return end
+
+    def update_fixture(self, fixture, ea_matches, our_id, players):
+        """Give a fixture the result of its game on EA. Returns True if anything changed."""
+        start = fixture.kickoff - self.EARLIEST
+        end = self.window_end(fixture)
+        wanted_opponent = fixture.opponent.strip().lower()
+
+        # Collect every EA match against this club inside the time window
+        candidates = []
+        for raw in ea_matches:
+            played_at = datetime.fromtimestamp(int(raw["timestamp"]), tz=dt_timezone.utc)
+            opponent_name = self.opponent_of(raw, our_id).get("details", {}).get("name", "")
+            if start <= played_at <= end and opponent_name.strip().lower() == wanted_opponent:
+                candidates.append((played_at, raw))
+
+        if not candidates:
+            return False  # not played yet, or not on EA yet
+
+        # Prefer games played to the end, falling back to a forfeit only if nothing else fits.
+        # Among those, the latest wins, so a replay always replaces the abandoned game before it
+        completed = [c for c in candidates if not self.is_forfeit(c[1])]
+        # key=...: compare candidates by their time (the first item of each pair)
+        _, chosen = max(completed or candidates, key=lambda c: c[0])
+        ea_id = str(chosen["matchId"])
+
+        if fixture.ea_match_id == ea_id:
+            return False  # already showing this game's result
+
+        if Match.objects.filter(ea_match_id=ea_id).exclude(pk=fixture.pk).exists():
+            # This EA game is already the result of another fixture; never use it twice
+            self.stderr.write(self.style.WARNING(f"  Skipped {fixture}: its EA game is used by another fixture"))
+            return False
+
+        self.apply_result(fixture, chosen, ea_id, our_id, players)
+        return True
+
+    # atomic: the score and all the stat lines change together or not at all
+    @transaction.atomic
+    def apply_result(self, fixture, raw, ea_id, our_id, players):
+        """Write one EA game's score and stats onto a fixture, replacing any earlier attempt."""
+        replacing = fixture.ea_match_id is not None
+        ours = raw["clubs"][our_id]
+        opponent = self.opponent_of(raw, our_id)
+
+        fixture.ea_match_id = ea_id
+        fixture.status = Match.Status.FINISHED
+        # EA sends numbers as text ("3"), so convert them
+        fixture.our_score = int(ours["goals"])
+        fixture.opponent_score = int(opponent["goals"])
+        # update_fields saves only these columns; competition, opponent and kick-off stay as the captain set them
+        fixture.save(update_fields=["ea_match_id", "status", "our_score", "opponent_score"])
+
+        # Clear any stat lines from an earlier attempt (e.g. the forfeit) before adding the new ones
+        fixture.stats.all().delete()
+        self.add_player_stats(fixture, raw, our_id, players)
+
+        action = "Replaced result for" if replacing else "Completed"
+        self.stdout.write(f"{action}: {fixture} ({fixture.our_score}-{fixture.opponent_score})")
+
+    def opponent_of(self, raw, our_id):
+        """The other club in an EA match: the key in "clubs" that is not ours."""
+        return next(club for club_id, club in raw["clubs"].items() if club_id != our_id)
+
+    def is_forfeit(self, raw):
+        """True if EA says either side won because the other quit or disconnected."""
+        return any(club.get("winnerByDnf") == "1" for club in raw["clubs"].values())
+
+    def add_player_stats(self, match, raw, our_id, players):
+        """Create a stat line for each squad member who played in this match."""
         for ea_player in raw["players"].get(our_id, {}).values():
             name = ea_player["playername"]
             player = players.get(name.lower())
@@ -96,11 +179,8 @@ class Command(BaseCommand):
                 is_motm=ea_player["mom"] == "1",
             )
 
-        self.stdout.write(f"Imported: {match}")
-        return True
-
     def update_totals(self, players):
-        """Copy each player's season and career totals from EA onto his Player record."""
+        """Copy each player's overall season and career totals from EA onto his Player record."""
         for prefix, career in (("season", False), ("career", True)):
             try:
                 members = fetch_member_totals(career=career)
@@ -112,7 +192,6 @@ class Command(BaseCommand):
                 # EA's "name" is the gamertag, the same key we match on for matches
                 player = players.get(member["name"].lower())
                 if player is None:
-                    # A club member who is not in our squad list; ignore him
                     continue
 
                 # setattr sets a field by its name as text, so this one block

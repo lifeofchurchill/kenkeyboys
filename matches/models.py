@@ -19,7 +19,7 @@ class Competition(models.Model):
 
 
 class Match(models.Model):
-    """One game: a fixture before kick-off, a result after."""
+    """One official game, created by the captain: a fixture before kick-off, a result after."""
 
     class Status(models.TextChoices):
         UPCOMING = "upcoming", "Upcoming"
@@ -41,9 +41,17 @@ class Match(models.Model):
     # which is different from a score of 0
     our_score = models.PositiveSmallIntegerField(null=True, blank=True)
     opponent_score = models.PositiveSmallIntegerField(null=True, blank=True)
-    # EA's own id for this match. It is how we recognise a match we already imported.
-    # Empty (NULL) for matches the captain enters by hand
+
+    # EA's own id for the game whose result is shown. Empty until the import fills it in.
+    # editable=False keeps it out of the admin form
     ea_match_id = models.CharField(max_length=30, unique=True, null=True, blank=True, editable=False)
+
+    # Ticked by the captain once the result is right.
+    # From then on, the import never changes this match again
+    result_confirmed = models.BooleanField(
+        default=False,
+        help_text="Tick once the result is correct. The EA import will then never change this match.",
+    )
 
     class Meta:
         verbose_name_plural = "matches"  # Django would otherwise write "Matchs"
@@ -63,6 +71,7 @@ class Match(models.Model):
         if self.our_score < self.opponent_score:
             return "L"
         return "D"
+
 
 class PlayerMatchStat(models.Model):
     """What one player did in one match."""
