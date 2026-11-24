@@ -41,7 +41,7 @@
         <a href="{% url 'website:players' %}" {% if active_page == "players" %}aria-current="page"{% endif %}>Squad</a>
         <a href="{% url 'website:news' %}" {% if active_page == "news" %}aria-current="page"{% endif %}>News</a>
         <a href="{% url 'website:honours' %}" {% if active_page == "honours" %}aria-current="page"{% endif %}>Honours</a>
-        <a class="btn btn--gold" href="{% url 'website:home' %}#join">Join the club</a>
+        <a class="btn btn--gold" href="{% url 'website:join' %}" {% if active_page == "join" %}aria-current="page"{% endif %}>Join the club</a>
       </nav>
     </div>
   </header>
@@ -58,7 +58,7 @@
         <span>Rooted in heritage, driven by passion</span>
       </div>
       {# {% now "Y" %} prints the current year, so the footer never goes out of date #}
-      <small>&copy; {% now "Y" %} Kenkey Boys Football Club · Est. 2026</small>
+      <small>&copy; {% now "Y" %} Kenkey Boys Football Club · Est. 2024</small>
     </div>
   </footer>
 </body>

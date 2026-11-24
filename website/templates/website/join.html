@@ -1,0 +1,86 @@
+{% extends "website/base.html" %}
+{% load static %}
+
+{% block title %}Join the club · Kenkey Boys FC{% endblock %}
+
+{# This page's own styles, placed into the extra_css slot in base.html #}
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'website/css/join.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="page-band">
+  <div class="container">
+    <p class="eyebrow">Trials</p>
+    <h1 class="page-band__title">Think you can wear the badge?</h1>
+  </div>
+</section>
+
+<section class="container section join">
+
+  <div class="join__intro">
+    <p class="lead">Tell us who you are and where you play. The captain reviews every request and invites the best to a trial night.</p>
+    {# An ordered list, numbered in gold circles by join.css #}
+    <ol class="join__steps">
+      <li><strong>Send your request</strong><span>It takes a minute.</span></li>
+      <li><strong>The captain reviews it</strong><span>He checks your position and platform against what the squad needs.</span></li>
+      <li><strong>Trial night</strong><span>Play a few games with the squad and show what you can do.</span></li>
+    </ol>
+  </div>
+
+  <div class="card card--padded join__card">
+    {# One-time messages from the view, e.g. "Request received" after a successful send #}
+    {% for message in messages %}
+      <div class="notice notice--success" role="status">{{ message }}</div>
+    {% endfor %}
+
+    <form class="join-form" method="post">
+      {# A secret token that proves this form came from our own page. #}
+      {# Django refuses any POST without it, which blocks forged requests from other sites #}
+      {% csrf_token %}
+
+      {# Errors about the whole form rather than one box, e.g. the hourly limit #}
+      {% if form.non_field_errors %}
+        <div class="notice notice--error" role="alert">{{ form.non_field_errors|join:" " }}</div>
+      {% endif %}
+
+      {# Each box: its label, the input Django builds, then any error for it. #}
+      {# field--error turns the border red when that box has a problem #}
+      <div class="field{% if form.gamertag.errors %} field--error{% endif %}">
+        <label for="{{ form.gamertag.id_for_label }}">{{ form.gamertag.label }}</label>
+        {{ form.gamertag }}
+        {% for error in form.gamertag.errors %}<p class="field__error">{{ error }}</p>{% endfor %}
+      </div>
+
+      <div class="field-row">
+        <div class="field{% if form.position.errors %} field--error{% endif %}">
+          <label for="{{ form.position.id_for_label }}">{{ form.position.label }}</label>
+          {{ form.position }}
+          {% for error in form.position.errors %}<p class="field__error">{{ error }}</p>{% endfor %}
+        </div>
+
+        <div class="field{% if form.platform.errors %} field--error{% endif %}">
+          <label for="{{ form.platform.id_for_label }}">{{ form.platform.label }}</label>
+          {{ form.platform }}
+          {% for error in form.platform.errors %}<p class="field__error">{{ error }}</p>{% endfor %}
+        </div>
+      </div>
+
+      <div class="field{% if form.message.errors %} field--error{% endif %}">
+        <label for="{{ form.message.id_for_label }}">{{ form.message.label }}</label>
+        {{ form.message }}
+        {% for error in form.message.errors %}<p class="field__error">{{ error }}</p>{% endfor %}
+      </div>
+
+      {# The spam trap: moved off screen by join.css, skipped by the Tab key, ignored by screen readers #}
+      <div class="form-trap" aria-hidden="true">
+        <label for="id_website">Leave this empty</label>
+        <input type="text" name="website" id="id_website" tabindex="-1" autocomplete="off">
+      </div>
+
+      <button type="submit" class="btn btn--gold btn--lg">Request a trial</button>
+    </form>
+  </div>
+
+</section>
+{% endblock %}

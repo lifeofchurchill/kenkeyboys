@@ -1,0 +1,74 @@
+/* ==========================================================================
+   Join page styles. Loaded only on /join/, through the extra_css block in base.html
+   ========================================================================== */
+
+/* Intro on the left, form on the right; stacked on phones */
+.join { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 48px; }
+.join__intro { flex: 1 1 340px; min-width: 0; display: flex; flex-direction: column; gap: 32px; }
+.join__card { flex: 1 1 440px; min-width: 0; }
+
+/* ---------- The three steps, numbered in gold circles ---------- */
+.join__steps {
+  margin: 0; padding: 0; list-style: none;
+  display: flex; flex-direction: column; gap: 20px;
+  counter-reset: step;               /* start a counter called "step" at 0 */
+}
+.join__steps li {
+  counter-increment: step;           /* add 1 for each item */
+  display: grid; grid-template-columns: 48px 1fr; column-gap: 16px;
+  color: var(--ink-soft);
+}
+/* The circle shows the counter's current value: 1, 2, 3 */
+.join__steps li::before {
+  content: counter(step);
+  grid-row: span 2;
+  width: 48px; height: 48px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--gold); color: var(--ink);
+  font-family: var(--font-display); font-size: 20px;
+}
+.join__steps strong {
+  font-family: var(--font-label); font-weight: 700; font-size: 20px;
+  letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink);
+}
+
+/* ---------- The form ---------- */
+.join-form { display: flex; flex-direction: column; gap: 20px; }
+
+.field { display: flex; flex-direction: column; gap: 6px; }
+/* Two boxes side by side (position and platform) that stack on phones */
+.field-row { display: flex; flex-wrap: wrap; gap: 20px; }
+.field-row .field { flex: 1 1 180px; }
+
+.field label {
+  font-family: var(--font-label); font-weight: 600; font-size: 16px;
+  letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft);
+}
+/* The same look for every kind of input */
+.field input,
+.field select,
+.field textarea {
+  width: 100%; min-height: 48px; padding: 10px 14px;
+  background: var(--white); color: var(--ink);
+  border: 1px solid var(--line-strong); border-radius: 6px;
+  font: inherit;                     /* use the site's font instead of the browser's default */
+}
+.field textarea { resize: vertical; }
+.field input:focus,
+.field select:focus,
+.field textarea:focus { border-color: var(--gold); }
+
+/* A box with a problem: red border and a red message under it */
+.field--error input,
+.field--error select,
+.field--error textarea { border-color: #B3261E; }
+.field__error { margin: 0; font-size: 15px; color: #B3261E; }
+
+/* ---------- Messages above the form ---------- */
+.notice { padding: 14px 16px; border-radius: 6px; font-weight: 500; }
+.notice--success { background: #E5F4E4; color: #1E5631; border: 1px solid #B7DDB5; }
+.notice--error { background: #FBEBEB; color: #8C1D18; border: 1px solid #F0C2C0; }
+
+/* ---------- The spam trap ---------- */
+/* Moved far off screen rather than display: none, because some bots skip hidden boxes */
+.form-trap { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }

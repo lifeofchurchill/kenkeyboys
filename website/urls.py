@@ -18,6 +18,7 @@ def coming_soon(page, title):
 urlpatterns = [
     path("", views.home, name="home"),
     path("squad/", views.squad, name="players"),
+    path("join/", views.join, name="join"),
     # <int:pk> captures a whole number from the address and passes it to the view as pk
     path("news/<int:pk>/", views.news_detail, name="news_detail"),
     # Placeholders: each is swapped for a real view as we build that page
