@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.contrib import messages
 from django.core.cache import cache
+from django.core.paginator import Paginator
 from django.db.models import Count, F, Q, Sum
 from django.db.models.functions import Coalesce
 from django.shortcuts import get_object_or_404, redirect, render
@@ -18,6 +19,9 @@ TICKER_PHRASES = ["Rooted in heritage", "Driven by passion", "Kenkey Boys Footba
 # At most 5 trial requests per hour from one internet connection
 TRIAL_LIMIT = 5
 TRIAL_WINDOW_SECONDS = 60 * 60
+
+# How many stories the News page shows at a time
+NEWS_PER_PAGE = 9
 
 
 def countdown_parts(kickoff, now):
@@ -57,6 +61,42 @@ def home(request):
         "trophies": Trophy.objects.select_related("player")[:3],
     }
     return render(request, "website/home.html", context)
+
+
+def news(request):
+    """
+    Every published story, newest first. Two settings come from the address:
+      ?category=match_report, club_news or signings   (default: all)
+      ?page=2, 3...                                    (default: 1)
+    """
+    published = NewsPost.objects.filter(published_at__lte=timezone.now())
+
+    # Only accept a category the model actually defines; anything else means "all"
+    category = request.GET.get("category")
+    if category not in NewsPost.Category.values:
+        category = "all"
+    if category != "all":
+        published = published.filter(category=category)
+
+    # The Paginator splits the stories into pages of NEWS_PER_PAGE.
+    # get_page copes with bad values: ?page=abc gives page 1, ?page=999 gives the last page
+    paginator = Paginator(published, NEWS_PER_PAGE)
+    page_obj = paginator.get_page(request.GET.get("page"))
+
+    # The stories on this page. On page 1, the newest one is taken out to be the big featured card
+    posts = list(page_obj)
+    featured = posts.pop(0) if page_obj.number == 1 and posts else None
+
+    context = {
+        "active_page": "news",
+        "category": category,
+        # Every category as (value, label) pairs, e.g. ("signings", "Signings"), for the filter
+        "categories": NewsPost.Category.choices,
+        "featured": featured,
+        "posts": posts,
+        "page_obj": page_obj,
+    }
+    return render(request, "website/news.html", context)
 
 
 def news_detail(request, pk):

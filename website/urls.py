@@ -21,9 +21,9 @@ urlpatterns = [
     # <int:pk> captures a whole number from the address and passes it to the view as pk
     path("matches/<int:pk>/", views.match_detail, name="match_detail"),
     path("squad/", views.squad, name="players"),
-    path("join/", views.join, name="join"),
+    path("news/", views.news, name="news"),
     path("news/<int:pk>/", views.news_detail, name="news_detail"),
-    # Placeholders: each is swapped for a real view as we build that page
-    path("news/", coming_soon("news", "News"), name="news"),
+    path("join/", views.join, name="join"),
+    # The last placeholder, swapped for a real view in the next step
     path("honours/", coming_soon("honours", "Trophy room"), name="honours"),
 ]

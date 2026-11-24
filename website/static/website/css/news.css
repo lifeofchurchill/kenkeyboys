@@ -1,0 +1,55 @@
+/* ==========================================================================
+   News page styles. Loaded only on /news/, through the extra_css block in base.html.
+   The featured story reuses the news-slide styles from site.css
+   ========================================================================== */
+
+/* ---------- Category filter ---------- */
+/* Same look as the Matches page switches: pill-shaped links, the chosen one in gold */
+.news-filter { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 32px; }
+.news-filter .pill { display: inline-flex; align-items: center; color: var(--ink); text-decoration: none; }
+.news-filter .pill[aria-current] { background: var(--gold); border-color: var(--gold); }
+
+/* ---------- Featured story ---------- */
+/* news-slide gives the picture-left, text-right layout; this adds the card around it */
+.featured {
+  margin-bottom: 40px;
+  background: var(--white);
+  border: 1px solid var(--line); border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+/* ---------- Story cards ---------- */
+.story-grid {
+  display: grid; gap: 20px; margin-bottom: 40px;
+  /* As many 300px-wide columns as fit; one column on phones */
+  grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr));
+}
+.story-card {
+  display: flex; flex-direction: column;
+  background: var(--white); color: var(--ink); text-decoration: none;
+  border: 1px solid var(--line); border-radius: var(--radius);
+}
+.story-card:hover { color: var(--ink); }
+
+/* A 16:9 picture area at the top of every card, so the grid lines up */
+.story-card__media {
+  position: relative; aspect-ratio: 16 / 9;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--band); border-bottom: 1px solid var(--line);
+}
+.story-card__photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+/* Stories without a picture show a small crest instead */
+.story-card__crest { width: 72px; border-radius: 6px; box-shadow: var(--shadow); }
+
+.story-card__body { flex: 1; display: flex; flex-direction: column; align-items: flex-start; gap: 10px; padding: 20px; }
+.story-card__title { margin: 0; font-size: 21px; font-weight: 700; line-height: 1.25; }
+.story-card__summary { margin: 0; font-size: 15px; color: var(--ink-soft); }
+/* margin-top: auto pushes the date to the bottom, so dates line up across a row */
+.story-card__date { margin-top: auto; font-size: 14px; color: var(--muted); }
+
+/* ---------- Page links ---------- */
+.pager { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 16px; }
+.pager__status {
+  font-family: var(--font-label); font-weight: 600; font-size: 16px;
+  letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted);
+}
