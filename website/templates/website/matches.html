@@ -1,0 +1,101 @@
+{% extends "website/base.html" %}
+{% load static %}
+
+{% block title %}Fixtures &amp; results · Kenkey Boys FC{% endblock %}
+
+{# This page's own styles, placed into the extra_css slot in base.html #}
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'website/css/matches.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="page-band">
+  <div class="container">
+    <p class="eyebrow">{{ season }}</p>
+    <h1 class="page-band__title">Fixtures &amp; results</h1>
+  </div>
+</section>
+
+<section class="container section">
+
+  {# The record for whatever is selected below, from the aggregate() in the view #}
+  <div class="summary reveal">
+    <div class="summary__item">
+      <span class="summary__value">{{ summary.played }}</span>
+      <span class="summary__label">Played</span>
+    </div>
+    <div class="summary__item">
+      <span class="summary__value summary__value--gold">{{ summary.won }}</span>
+      <span class="summary__label">Won</span>
+    </div>
+    <div class="summary__item">
+      <span class="summary__value">{{ summary.drawn }}</span>
+      <span class="summary__label">Drawn</span>
+    </div>
+    <div class="summary__item">
+      <span class="summary__value">{{ summary.lost }}</span>
+      <span class="summary__label">Lost</span>
+    </div>
+    <div class="summary__item">
+      <span class="summary__value">{{ summary.scored }}–{{ summary.conceded }}</span>
+      <span class="summary__label">Goals for–against</span>
+    </div>
+  </div>
+
+  {# Two switches. Each link keeps the other switch's setting in the address, #}
+  {# so choosing "Fixtures" while on "Friendlies" shows friendly fixtures. #}
+  {# An address starting with ? keeps the same page and only changes the settings #}
+  <div class="switches">
+    <nav class="switch" aria-label="Show results or fixtures">
+      <a class="pill" href="?show=results&amp;type={{ kind }}" {% if show == "results" %}aria-current="true"{% endif %}>Results</a>
+      <a class="pill" href="?show=fixtures&amp;type={{ kind }}" {% if show == "fixtures" %}aria-current="true"{% endif %}>Fixtures</a>
+    </nav>
+    <nav class="switch" aria-label="Filter by competition type">
+      <a class="pill" href="?show={{ show }}&amp;type=all" {% if kind == "all" %}aria-current="true"{% endif %}>All</a>
+      <a class="pill" href="?show={{ show }}&amp;type=official" {% if kind == "official" %}aria-current="true"{% endif %}>Official</a>
+      <a class="pill" href="?show={{ show }}&amp;type=friendly" {% if kind == "friendly" %}aria-current="true"{% endif %}>Friendlies</a>
+    </nav>
+  </div>
+
+  <ol class="match-list">
+    {% for match in rows %}
+      <li>
+        {# The whole row is one link to that match's page #}
+        <a class="match-row lift" href="{% url 'website:match_detail' match.pk %}">
+          <span class="match-row__date">
+            <span class="match-row__day">{{ match.kickoff|date:"d" }}</span>
+            <span class="match-row__month">{{ match.kickoff|date:"M" }}</span>
+          </span>
+
+          {% include "website/partials/opponent_badge.html" with opponent=match.opponent size="sm" %}
+
+          <span class="match-row__info">
+            <span class="match-row__competition">{{ match.competition.name }}</span>
+            <span class="match-row__teams">Kenkey Boys <span class="match-row__vs">vs</span> {{ match.opponent.name }}</span>
+          </span>
+
+          {% if match.result %}
+            {# Finished: the score, coloured by result #}
+            <span class="match-row__score match-row__score--{{ match.result|lower }}">{{ match.our_score }}–{{ match.opponent_score }}</span>
+          {% elif match.kickoff < now %}
+            {# Kick-off has passed but the import has not filled in the score yet #}
+            <span class="match-row__score match-row__score--waiting">Awaiting result</span>
+          {% else %}
+            {# Still to come: the kick-off time #}
+            <span class="match-row__score">{{ match.kickoff|date:"H:i" }}</span>
+          {% endif %}
+        </a>
+      </li>
+    {% empty %}
+      <li class="empty">
+        {% if show == "fixtures" %}
+          No fixtures scheduled here yet. Check back soon.
+        {% else %}
+          No results here yet. They appear after full time.
+        {% endif %}
+      </li>
+    {% endfor %}
+  </ol>
+
+</section>
+{% endblock %}

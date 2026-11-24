@@ -12,10 +12,11 @@ from matches.models import Match, PlayerMatchStat
 
 
 class Command(BaseCommand):
-    help = "Fill in results for the captain's official fixtures from EA, and update player totals."
+    help = "Fill in results for the captain's fixtures from EA club friendlies, and update player totals."
 
-    # Every kind of EA match is checked: an official game could be played as any of them
-    MATCH_TYPES = ("friendlyMatch", "leagueMatch", "playoffMatch")
+    # Official games and friendlies are both played as club friendlies on EA,
+    # so that is the only kind of EA match the import looks at. League and playoff games are ignored
+    MATCH_TYPE = "friendlyMatch"
 
     # The five totals EA gives us for each member
     TOTAL_STATS = ("games", "goals", "assists", "rating", "motm")
@@ -41,7 +42,7 @@ class Command(BaseCommand):
         players = {p.gamertag.lower(): p for p in Player.objects.all()}
 
         # Part 1: fill in the results of the captain's fixtures
-        ea_matches = self.fetch_all_matches()
+        ea_matches = self.fetch_friendlies()
         updated = 0
         for fixture in self.fixtures_to_check(options["days"]):
             if self.update_fixture(fixture, ea_matches, our_id, players):
@@ -52,22 +53,20 @@ class Command(BaseCommand):
 
         self.stdout.write(self.style.SUCCESS(f"Updated {updated} fixture(s)."))
 
-    def fetch_all_matches(self):
-        """Every recent match EA has for the club, of every type, in one list."""
-        matches = []
-        for match_type in self.MATCH_TYPES:
-            try:
-                matches.extend(fetch_matches(match_type))
-            except EAError as exc:
-                # One failing type should not stop the others
-                self.stderr.write(self.style.ERROR(str(exc)))
-        return matches
+    def fetch_friendlies(self):
+        """The club's recent friendlies from EA (at most 10), or an empty list if EA fails."""
+        try:
+            return fetch_matches(self.MATCH_TYPE)
+        except EAError as exc:
+            self.stderr.write(self.style.ERROR(str(exc)))
+            return []
 
     def fixtures_to_check(self, days):
         """The captain's fixtures that have kicked off recently and are not confirmed."""
         now = timezone.now()
         return (
-            Match.objects.filter(
+            Match.objects.select_related("opponent")
+            .filter(
                 result_confirmed=False,
                 kickoff__lte=now,                          # has kicked off
                 kickoff__gte=now - timedelta(days=days),   # but not too long ago
@@ -85,7 +84,7 @@ class Command(BaseCommand):
         # If we meet the same club again soon after (e.g. a second leg),
         # stop looking just before that game, so the two results never get mixed up
         next_meeting = (
-            Match.objects.filter(opponent__iexact=fixture.opponent, kickoff__gt=fixture.kickoff)
+            Match.objects.filter(opponent=fixture.opponent, kickoff__gt=fixture.kickoff)
             .order_by("kickoff")
             .first()
         )
@@ -97,7 +96,8 @@ class Command(BaseCommand):
         """Give a fixture the result of its game on EA. Returns True if anything changed."""
         start = fixture.kickoff - self.EARLIEST
         end = self.window_end(fixture)
-        wanted_opponent = fixture.opponent.strip().lower()
+        # The opponent is now an Opponent entry, so its name is fixture.opponent.name
+        wanted_opponent = fixture.opponent.name.strip().lower()
 
         # Collect every EA match against this club inside the time window
         candidates = []

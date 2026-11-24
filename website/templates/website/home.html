@@ -10,7 +10,7 @@
 
   <div class="container hero__inner">
     <div class="hero__text">
-      <p class="eyebrow rise">FC 27 Pro Clubs · Est. 2026</p>
+      <p class="eyebrow rise">FC 27 Pro Clubs · Est. 2024</p>
       <h1 class="hero__title">
         <span class="rise rise--1">Rooted in heritage.</span>
         <span class="rise rise--2 gold-text">Driven by passion.</span>
@@ -65,9 +65,9 @@
           </div>
           <span class="versus__vs">VS</span>
           <div class="versus__team versus__team--away">
-            <span>{{ next_match.opponent }}</span>
-            {# The opponent's first letter in a circle, standing in for their crest #}
-            <span class="versus__initial" aria-hidden="true">{{ next_match.opponent|first|upper }}</span>
+            <span>{{ next_match.opponent.name }}</span>
+            {# The opponent's logo, or their first letter if no logo has been uploaded #}
+            {% include "website/partials/opponent_badge.html" with opponent=next_match.opponent %}
           </div>
         </div>
 
@@ -98,7 +98,7 @@
           <li class="form-list__row">
             {# match.result is "W", "D" or "L"; |lower turns it into the class result-badge--w, --d or --l #}
             <span class="result-badge result-badge--{{ match.result|lower }}">{{ match.result }}</span>
-            <span class="form-list__opponent">vs {{ match.opponent }}</span>
+            <span class="form-list__opponent">vs {{ match.opponent.name }}</span>
             <span class="form-list__score">{{ match.our_score }}–{{ match.opponent_score }}</span>
           </li>
         {% empty %}

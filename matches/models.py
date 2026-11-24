@@ -1,12 +1,19 @@
 from django.db import models
+from django.db.models.functions import Lower
 
 
 class Competition(models.Model):
-    """A league or cup the club plays in during one season."""
+    """A competition the club plays in during one season: an official one, or friendlies."""
+
+    class Kind(models.TextChoices):
+        OFFICIAL = "official", "Official competition"
+        FRIENDLY = "friendly", "Friendly"
 
     name = models.CharField(max_length=100)
     # Free text so it fits any format, e.g. "2026" or "Season 3"
     season = models.CharField(max_length=20)
+    # Lets the website show only official games, or only friendlies
+    kind = models.CharField(max_length=10, choices=Kind.choices, default=Kind.OFFICIAL)
 
     class Meta:
         # The same competition name can repeat across seasons, but not within one
@@ -18,8 +25,37 @@ class Competition(models.Model):
         return f"{self.name} ({self.season})"
 
 
+class Opponent(models.Model):
+    """A club we play against, stored once with its logo and reused for every match against them."""
+
+    # Must match the club's name in the game, so the EA import can find the right game
+    name = models.CharField(
+        max_length=100,
+        help_text="Exactly as it appears in the game. Capitals don't matter.",
+    )
+    # Optional: without a logo, the website shows the first letter of the name in a circle
+    logo = models.ImageField(upload_to="opponents/", blank=True)
+
+    class Meta:
+        ordering = ["name"]
+        constraints = [
+            # No two opponents with the same name, ignoring capitals.
+            # Lower("name") compares the names in lower case, so "Agbero United"
+            # and "AGBERO UNITED" count as the same club
+            models.UniqueConstraint(Lower("name"), name="unique_opponent_name_ignoring_case"),
+        ]
+
+    def __str__(self):
+        return self.name
+
+    @property
+    def initial(self):
+        """The first letter of the name, shown in place of a missing logo."""
+        return self.name[:1].upper()
+
+
 class Match(models.Model):
-    """One official game, created by the captain: a fixture before kick-off, a result after."""
+    """One game, created by the captain: a fixture before kick-off, a result after."""
 
     class Status(models.TextChoices):
         UPCOMING = "upcoming", "Upcoming"
@@ -33,7 +69,13 @@ class Match(models.Model):
         on_delete=models.PROTECT,
         related_name="matches",
     )
-    opponent = models.CharField(max_length=100)
+    # Now a link to an Opponent entry instead of typed text.
+    # PROTECT: an opponent cannot be deleted while matches against them exist
+    opponent = models.ForeignKey(
+        Opponent,
+        on_delete=models.PROTECT,
+        related_name="matches",
+    )
     kickoff = models.DateTimeField()
     status = models.CharField(max_length=10, choices=Status.choices, default=Status.UPCOMING)
 

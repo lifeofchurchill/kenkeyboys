@@ -1,0 +1,121 @@
+{% extends "website/base.html" %}
+{% load static %}
+
+{% block title %}Kenkey Boys vs {{ match.opponent.name }} · Kenkey Boys FC{% endblock %}
+
+{# Shares its stylesheet with the fixtures and results page #}
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'website/css/matches.css' %}">
+{% endblock %}
+
+{% block content %}
+
+{# ---------- Scoreboard ---------- #}
+<section class="scoreboard">
+  <div class="container scoreboard__inner">
+    <a class="back-link" href="{% url 'website:matches' %}">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
+      All matches
+    </a>
+
+    <p class="eyebrow scoreboard__meta">
+      {{ match.competition.name }} · {{ match.kickoff|date:"l j F Y" }}{% if match.result %} · Full time{% endif %}
+    </p>
+
+    <div class="scoreboard__teams">
+      <div class="scoreboard__team">
+        <span class="scoreboard__name">Kenkey Boys</span>
+        <img src="{% static 'website/img/crest.jpg' %}" alt="" width="66" height="88">
+      </div>
+
+      {% if match.result %}
+        <h1 class="scoreboard__score">
+          {# The heading reads naturally to a screen reader, e.g. "Kenkey Boys 3, Agbero United 1" #}
+          <span class="visually-hidden">Kenkey Boys</span>
+          <span class="gold-text">{{ match.our_score }}</span>
+          <span class="scoreboard__dash" aria-hidden="true">–</span>
+          <span class="visually-hidden">, {{ match.opponent.name }}</span>
+          {{ match.opponent_score }}
+        </h1>
+      {% else %}
+        <h1 class="scoreboard__score scoreboard__score--time">
+          <span class="visually-hidden">Kenkey Boys vs {{ match.opponent.name }}, kick-off</span>
+          {{ match.kickoff|date:"H:i" }}
+        </h1>
+      {% endif %}
+
+      <div class="scoreboard__team scoreboard__team--away">
+        {% include "website/partials/opponent_badge.html" with opponent=match.opponent size="lg" %}
+        <span class="scoreboard__name">{{ match.opponent.name }}</span>
+      </div>
+    </div>
+
+    {% if scorers %}
+      {# e.g. "Mants3 ×2, Churchill". ×2 only appears for more than one goal #}
+      <p class="scoreboard__scorers">
+        Scorers:
+        {% for line in scorers %}{{ line.player.display_name }}{% if line.goals > 1 %} ×{{ line.goals }}{% endif %}{% if not forloop.last %}, {% endif %}{% endfor %}
+      </p>
+    {% endif %}
+  </div>
+</section>
+
+{% if match.result %}
+  {# ---------- Report: only once the match is finished ---------- #}
+  <section class="container section">
+
+    {% if motm %}
+      <div class="card card--padded motm reveal">
+        <span class="tag tag--gold">Man of the match</span>
+        <span class="motm__name">{{ motm.player.display_name }}</span>
+        <span class="motm__line">
+          {{ motm.player.get_position_display }} · Rating {{ motm.rating }} · {{ motm.goals }} goals · {{ motm.assists }} assists
+        </span>
+      </div>
+    {% endif %}
+
+    <div class="section-head reveal">
+      <p class="eyebrow">Player ratings</p>
+      <h2 class="section-title">The team sheet</h2>
+    </div>
+
+    {# A real table: rows of players, columns of numbers. table-wrap lets it scroll sideways on phones #}
+    <div class="table-wrap reveal">
+      <table class="ratings">
+        <thead>
+          <tr>
+            {# scope="col" tells screen readers each heading labels the column below it #}
+            <th scope="col">No.</th>
+            <th scope="col">Player</th>
+            <th scope="col">Pos</th>
+            <th scope="col">Goals</th>
+            <th scope="col">Assists</th>
+            <th scope="col">Rating</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for line in stats %}
+            <tr{% if line.is_motm %} class="ratings__motm"{% endif %}>
+              <td class="ratings__number">{{ line.player.shirt_number }}</td>
+              {# The player's name labels his whole row #}
+              <th scope="row">{{ line.player.display_name }}</th>
+              <td>{{ line.player.position }}</td>
+              <td>{{ line.goals }}</td>
+              <td>{{ line.assists }}</td>
+              <td class="ratings__rating">{{ line.rating }}</td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="6" class="empty">No player stats for this match.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+  </section>
+{% else %}
+  <section class="container section">
+    <p class="lead">This match hasn't been played yet. The result and player ratings appear here after full time.</p>
+  </section>
+{% endif %}
+
+{% endblock %}

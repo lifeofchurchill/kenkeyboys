@@ -1,0 +1,139 @@
+/* ==========================================================================
+   Matches pages: the fixtures and results list, and the match page.
+   Loaded through the extra_css block in base.html
+   ========================================================================== */
+
+/* ---------- Season record ---------- */
+.summary {
+  display: grid; gap: 14px; margin-bottom: 36px;
+  grid-template-columns: repeat(auto-fit, minmax(min(140px, 100%), 1fr));
+}
+.summary__item {
+  display: flex; flex-direction: column; gap: 8px; padding: 22px;
+  background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+.summary__value { font-family: var(--font-display); font-size: 44px; line-height: 1; }
+.summary__value--gold { color: var(--gold-text); }
+.summary__label {
+  font-family: var(--font-label); font-weight: 600; font-size: 15px;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+}
+
+/* ---------- The two switches: Results/Fixtures and All/Official/Friendlies ---------- */
+.switches {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+  gap: 12px 24px; margin-bottom: 20px;
+}
+.switch { display: flex; flex-wrap: wrap; gap: 8px; }
+/* .pill was made for buttons; these lines make it work on links too */
+.switch .pill { display: inline-flex; align-items: center; color: var(--ink); text-decoration: none; }
+/* The chosen option in each switch turns gold */
+.switch .pill[aria-current] { background: var(--gold); border-color: var(--gold); }
+
+/* ---------- The list of matches ---------- */
+.match-list { display: flex; flex-direction: column; gap: 12px; margin: 0; padding: 0; list-style: none; }
+.match-row {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 16px 20px;
+  padding: 18px 22px;
+  background: var(--white); color: var(--ink); text-decoration: none;
+  border: 1px solid var(--line); border-radius: var(--radius);
+}
+.match-row:hover { color: var(--ink); }
+
+/* The date block on the left, e.g. "21 / NOV" */
+.match-row__date {
+  flex: none; width: 76px; padding-right: 20px;
+  display: flex; flex-direction: column; align-items: center;
+  border-right: 1px solid var(--line);
+}
+.match-row__day { font-family: var(--font-display); font-size: 32px; line-height: 1; }
+.match-row__month {
+  font-family: var(--font-label); font-weight: 700; font-size: 15px;
+  letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted);
+}
+
+.match-row__info { flex: 1 1 220px; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.match-row__competition {
+  font-family: var(--font-label); font-weight: 600; font-size: 15px;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold-text);
+}
+.match-row__teams { font-weight: 600; font-size: 20px; }
+.match-row__vs { color: var(--muted); font-weight: 500; }
+
+/* The box on the right: a score, a kick-off time or "Awaiting result" */
+.match-row__score {
+  flex: none; min-width: 96px; padding: 6px 14px; text-align: center;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 6px;
+  font-family: var(--font-display); font-size: 22px;
+}
+/* Same colours as the result badges on the home page: win gold, draw stone, loss outlined */
+.match-row__score--w { background: var(--gold); border-color: var(--gold); }
+.match-row__score--d { background: var(--line); border-color: var(--line); }
+.match-row__score--l { background: var(--white); border-color: var(--line-strong); }
+.match-row__score--waiting {
+  font-family: var(--font-label); font-weight: 700; font-size: 15px;
+  letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted);
+}
+
+/* ---------- Match page: scoreboard ---------- */
+.scoreboard { position: relative; overflow: hidden; background: var(--band); border-bottom: 1px solid var(--line); }
+/* Faint diagonal stripes, like the page bands */
+.scoreboard::before {
+  content: ""; position: absolute; inset: 0;
+  background-image: repeating-linear-gradient(135deg, rgba(212, 175, 90, 0.10) 0 1px, transparent 1px 22px);
+}
+.scoreboard__inner { position: relative; display: flex; flex-direction: column; gap: 24px; padding-block: 36px 56px; }
+.scoreboard__meta { justify-content: center; }
+
+.scoreboard__teams {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 28px;
+  animation: rise .7s ease .1s both;
+}
+.scoreboard__team { flex: 1 1 220px; display: flex; align-items: center; justify-content: flex-end; gap: 16px; }
+.scoreboard__team--away { justify-content: flex-start; }
+/* Our crest. The > means "an image directly inside the team block" only,
+   so the opponent's logo (which sits inside its badge) is left to components.css */
+.scoreboard__team > img { width: 66px; height: 88px; object-fit: cover; border-radius: 8px; }
+.scoreboard__name { font-family: var(--font-display); font-size: clamp(22px, 3vw, 34px); text-transform: uppercase; }
+.scoreboard__team--away .scoreboard__name { color: var(--ink-soft); }
+
+.scoreboard__score {
+  margin: 0;
+  font-family: var(--font-display); font-weight: 400;
+  font-size: clamp(64px, 10vw, 128px); line-height: 1; white-space: nowrap;
+}
+.scoreboard__score--time { font-size: clamp(40px, 6vw, 72px); }
+.scoreboard__dash { color: var(--line-strong); }
+.scoreboard__scorers { margin: 0; text-align: center; color: var(--ink-soft); }
+
+/* ---------- Match page: man of the match ---------- */
+/* card--padded stacks things in a column; here they sit in a row instead */
+.motm { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 12px 20px; margin-bottom: 40px; }
+.motm__name { font-family: var(--font-display); font-size: 28px; text-transform: uppercase; }
+.motm__line { color: var(--ink-soft); }
+
+/* ---------- Match page: team sheet ---------- */
+/* On phones the table scrolls sideways inside this box instead of squashing */
+.table-wrap { overflow-x: auto; background: var(--white); border: 1px solid var(--line); border-radius: var(--radius); }
+.ratings { width: 100%; min-width: 560px; border-collapse: collapse; }
+.ratings th,
+.ratings td { padding: 12px 22px; text-align: left; border-bottom: 1px solid var(--line); }
+.ratings thead th {
+  font-family: var(--font-label); font-weight: 600; font-size: 15px;
+  letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted);
+}
+.ratings tbody th { font-weight: 600; }
+/* No line under the last row; the box's own border closes it */
+.ratings tbody tr:last-child > * { border-bottom: 0; }
+.ratings__number { font-family: var(--font-display); font-size: 20px; color: var(--gold-text); }
+.ratings__rating { font-family: var(--font-display); font-size: 20px; }
+/* The man of the match's row is tinted gold */
+.ratings__motm { background: #FFF6DD; }
+
+/* ---------- Phones ---------- */
+@media (max-width: 640px) {
+  /* Centre both teams once they stack above and below the score */
+  .scoreboard__team,
+  .scoreboard__team--away { justify-content: center; }
+}

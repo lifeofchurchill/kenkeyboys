@@ -1,0 +1,23 @@
+/* ==========================================================================
+   Shared components added after site.css was finished. Loaded on every page by base.html.
+   New shared styles go in this file, so site.css never has to be replaced again
+   ========================================================================== */
+
+/* ---------- Opponent badge: the club's logo, or its first letter ---------- */
+/* A rounded square, like our own crest, so logos fill it with very little trimmed off */
+.opponent-badge {
+  width: 56px; height: 56px; flex: none;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden; border-radius: 10px;
+  background: var(--band); border: 1px solid var(--line-strong);
+  font-family: var(--font-display); font-size: 22px; color: var(--ink-soft);
+}
+/* cover: the logo fills the whole badge. If the picture's shape differs from the badge,
+   its edges are trimmed evenly instead of leaving empty space around it */
+.opponent-badge img { width: 100%; height: 100%; object-fit: cover; }
+/* A badge holding a logo only needs a faint outline */
+.opponent-badge:has(img) { border-color: var(--line); }
+
+/* Two other sizes: small for lists, large for the match page */
+.opponent-badge--sm { width: 40px; height: 40px; font-size: 16px; border-radius: 8px; }
+.opponent-badge--lg { width: 88px; height: 88px; font-size: 34px; border-radius: 12px; }

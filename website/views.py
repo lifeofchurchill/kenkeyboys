@@ -1,11 +1,13 @@
 from django.conf import settings
 from django.contrib import messages
 from django.core.cache import cache
+from django.db.models import Count, F, Q, Sum
+from django.db.models.functions import Coalesce
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
 from club.models import NewsPost, Player, Trophy
-from matches.models import Match
+from matches.models import Competition, Match
 
 from .forms import TrialRequestForm
 
@@ -31,11 +33,13 @@ def countdown_parts(kickoff, now):
 def home(request):
     """The home page: next match, recent form, latest news and honours."""
     now = timezone.now()
+    # Every match shown on this page needs its competition and opponent,
+    # so fetch them in the same query instead of one extra query per match
+    matches_with_details = Match.objects.select_related("competition", "opponent")
 
     # The soonest fixture that has not kicked off yet; None if nothing is scheduled
     next_match = (
-        Match.objects.select_related("competition")
-        .filter(status=Match.Status.UPCOMING, kickoff__gte=now)
+        matches_with_details.filter(status=Match.Status.UPCOMING, kickoff__gte=now)
         .order_by("kickoff")
         .first()
     )
@@ -46,7 +50,7 @@ def home(request):
         "next_match": next_match,
         "countdown": countdown_parts(next_match.kickoff, now) if next_match else None,
         # The five latest results, newest first
-        "recent_results": Match.objects.filter(status=Match.Status.FINISHED)[:5],
+        "recent_results": matches_with_details.filter(status=Match.Status.FINISHED)[:5],
         # The five newest stories whose publish time has arrived, for the rotating section
         "latest_news": NewsPost.objects.filter(published_at__lte=now)[:5],
         # The three latest honours
@@ -109,12 +113,91 @@ def join(request):
             cache.set(cache_key, sent_recently + 1, TRIAL_WINDOW_SECONDS)
             # A one-time message, shown on the next page load and then gone
             messages.success(request, "Request received. The captain will be in touch with a trial date.")
-            # Post/Redirect/Get: send the browser to a fresh, empty copy of the page,
-            # so pressing refresh can never send the same request twice
+            # Post/Redirect/Get: a fresh, empty copy of the page, so refresh can never send it twice
             return redirect("website:join")
     else:
         # A first visit: an empty, "unbound" form
         form = TrialRequestForm()
 
-    # Reached on a first visit, or when the form has errors to show next to the boxes
     return render(request, "website/join.html", {"active_page": "join", "form": form})
+
+
+def matches(request):
+    """
+    Fixtures and results. Two settings come from the address:
+      ?show=results or fixtures            (default: results)
+      ?type=all, official or friendly      (default: all)
+    """
+    # request.GET holds the query parameters from the address
+    show = "fixtures" if request.GET.get("show") == "fixtures" else "results"
+
+    # Only accept a competition kind the model actually defines; anything else means "all"
+    kind = request.GET.get("type")
+    if kind not in Competition.Kind.values:
+        kind = "all"
+
+    games = Match.objects.select_related("competition", "opponent")
+    if kind != "all":
+        # competition__kind follows the link to the competition and checks its kind
+        games = games.filter(competition__kind=kind)
+
+    finished = games.filter(status=Match.Status.FINISHED)
+
+    if show == "fixtures":
+        # Games still to be played, soonest first
+        rows = games.filter(status=Match.Status.UPCOMING).order_by("kickoff")
+    else:
+        # Results, newest first (the order set in the Match model)
+        rows = finished
+
+    # The record for whatever is selected, counted by the database in a single query.
+    # F("opponent_score") means "the opponent_score of the same row", so the database
+    # compares each match's two scores itself
+    summary = finished.aggregate(
+        played=Count("id"),
+        won=Count("id", filter=Q(our_score__gt=F("opponent_score"))),
+        drawn=Count("id", filter=Q(our_score=F("opponent_score"))),
+        lost=Count("id", filter=Q(our_score__lt=F("opponent_score"))),
+        # Coalesce turns "no matches yet" (None) into 0
+        scored=Coalesce(Sum("our_score"), 0),
+        conceded=Coalesce(Sum("opponent_score"), 0),
+    )
+
+    context = {
+        "active_page": "matches",
+        "show": show,
+        "kind": kind,
+        "rows": rows,
+        "summary": summary,
+        # Lets the template tell a fixture still to come from one awaiting its result
+        "now": timezone.now(),
+        "season": settings.EA_SEASON,
+    }
+    return render(request, "website/matches.html", context)
+
+
+def match_detail(request, pk):
+    """One match, at /matches/<pk>/: a preview before kick-off, a report after."""
+    # get_object_or_404 also accepts a queryset: here, any match except cancelled ones
+    match = get_object_or_404(
+        Match.objects.select_related("competition", "opponent").exclude(status=Match.Status.CANCELLED),
+        pk=pk,
+    )
+
+    # Every player's stat line, best rating first, each with its player fetched in the same query
+    stats = match.stats.select_related("player")
+
+    # Looping over a queryset stores its rows, so the template reuses them without asking again.
+    # Goal scorers for the line under the score, most goals first
+    scorers = sorted((line for line in stats if line.goals), key=lambda line: line.goals, reverse=True)
+    # The man of the match's line, or None. next() takes the first one found
+    motm = next((line for line in stats if line.is_motm), None)
+
+    context = {
+        "active_page": "matches",
+        "match": match,
+        "stats": stats,
+        "scorers": scorers,
+        "motm": motm,
+    }
+    return render(request, "website/match_detail.html", context)

@@ -1,0 +1,12 @@
+{# A reusable piece of a page, pulled in with {% include %}. #}
+{# It shows an opponent's logo, or the first letter of their name when there is no logo. #}
+{# Use it like this:  {% include "website/partials/opponent_badge.html" with opponent=match.opponent size="sm" %} #}
+{# size is optional: "sm" (small) or "lg" (large); leave it out for the normal size. #}
+{# aria-hidden: the club's name is always written next to the badge, so screen readers skip the picture #}
+<span class="opponent-badge{% if size %} opponent-badge--{{ size }}{% endif %}" aria-hidden="true">
+  {% if opponent.logo %}
+    <img src="{{ opponent.logo.url }}" alt="" loading="lazy">
+  {% else %}
+    {{ opponent.initial }}
+  {% endif %}
+</span>

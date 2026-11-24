@@ -18,6 +18,8 @@
   <link rel="icon" href="{% static 'website/img/crest.jpg' %}">
   {# Styles shared by every page #}
   <link rel="stylesheet" href="{% static 'website/css/site.css' %}">
+  {# Shared pieces added later, such as opponent logos. New shared styles go here #}
+  <link rel="stylesheet" href="{% static 'website/css/components.css' %}">
   {# A slot where a page can add its own stylesheet. Empty unless a page fills it #}
   {% block extra_css %}{% endblock %}
   {# defer: download alongside the page, run once all the HTML has been read #}
