@@ -1,0 +1,74 @@
+{% extends "website/base.html" %}
+{% load static %}
+
+{% block title %}The squad · Kenkey Boys FC{% endblock %}
+
+{# This page's own styles, placed into the extra_css slot in base.html #}
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'website/css/squad.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="page-band">
+  <div class="container">
+    {# |length counts the players; the loop below reuses the same list without asking the database twice #}
+    <p class="eyebrow">{{ season }} · {{ squad|length }} players</p>
+    <h1 class="page-band__title">The squad</h1>
+  </div>
+</section>
+
+<section class="container section">
+  <div class="section-row">
+    <p class="lead">Season totals from every game the club has played on EA.</p>
+
+    {# hidden until site.js switches it on; data-filter says which group each button shows #}
+    <div class="squad-filter" role="group" aria-label="Filter by position" hidden>
+      <button type="button" class="pill" data-filter="ALL" aria-pressed="true">All</button>
+      <button type="button" class="pill" data-filter="ATT" aria-pressed="false">Attack</button>
+      <button type="button" class="pill" data-filter="MID" aria-pressed="false">Midfield</button>
+      <button type="button" class="pill" data-filter="DEF" aria-pressed="false">Defence</button>
+      <button type="button" class="pill" data-filter="GK" aria-pressed="false">Keepers</button>
+    </div>
+  </div>
+
+  <div class="squad-grid squad-grid--full">
+    {% for player in squad %}
+      {# data-group (GK, DEF, MID or ATT) is what the filter buttons look at #}
+      <article class="player-card lift" data-group="{{ player.position_group }}">
+        <div class="player-card__photo">
+          {% if player.photo %}
+            {# alt is empty because the name is written right below the photo #}
+            <img src="{{ player.photo.url }}" alt="" loading="lazy">
+          {% else %}
+            <span aria-hidden="true">{{ player.shirt_number }}</span>
+          {% endif %}
+        </div>
+
+        <div class="player-card__body">
+          <div class="player-card__top">
+            <span class="player-card__number">{{ player.shirt_number }}</span>
+            <span class="tag">{{ player.position }}</span>
+          </div>
+          <h2 class="player-card__name">{{ player.display_name }}</h2>
+          {# get_position_display turns "ST" into "Striker" #}
+          <p class="player-card__role">{{ player.get_position_display }}</p>
+
+          {# Season totals from EA. A <dl> is a list of label and value pairs #}
+          <dl class="figures">
+            <div class="figures__item"><dt>Apps</dt><dd>{{ player.season_games }}</dd></div>
+            <div class="figures__item"><dt>Goals</dt><dd>{{ player.season_goals }}</dd></div>
+            <div class="figures__item"><dt>Assists</dt><dd>{{ player.season_assists }}</dd></div>
+          </dl>
+          {# A player with no games yet shows a dash instead of a 0.0 rating #}
+          <p class="figures__extra">
+            Avg rating {% if player.season_games %}{{ player.season_rating }}{% else %}–{% endif %}
+            · Man of the match {{ player.season_motm }}
+          </p>
+        </div>
+      </article>
+    {% empty %}
+      <p class="empty">The squad list is being updated.</p>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

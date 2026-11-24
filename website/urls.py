@@ -17,12 +17,11 @@ def coming_soon(page, title):
 
 urlpatterns = [
     path("", views.home, name="home"),
-    # <int:pk> captures a whole number from the address and passes it to the view as pk.
-    # /news/7/ calls news_detail(request, pk=7); /news/abc/ never reaches the view at all
+    path("squad/", views.squad, name="players"),
+    # <int:pk> captures a whole number from the address and passes it to the view as pk
     path("news/<int:pk>/", views.news_detail, name="news_detail"),
     # Placeholders: each is swapped for a real view as we build that page
     path("matches/", coming_soon("matches", "Fixtures & results"), name="matches"),
-    path("squad/", coming_soon("players", "The squad"), name="players"),
     path("news/", coming_soon("news", "News"), name="news"),
     path("honours/", coming_soon("honours", "Trophy room"), name="honours"),
 ]

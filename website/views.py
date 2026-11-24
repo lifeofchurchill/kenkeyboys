@@ -1,7 +1,8 @@
+from django.conf import settings
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 
-from club.models import NewsPost, Trophy
+from club.models import NewsPost, Player, Trophy
 from matches.models import Match
 
 # The phrases in the scrolling gold band. Edit them here to change the band.
@@ -50,9 +51,7 @@ def news_detail(request, pk):
     """One full news story, at /news/<pk>/."""
     now = timezone.now()
 
-    # get_object_or_404 shows a "Page not found" page instead of crashing when
-    # the story does not exist. The published_at check also gives 404 for a
-    # story scheduled for later, so nobody can read it early by guessing its number
+    # 404 for a story that does not exist or is scheduled for later
     post = get_object_or_404(NewsPost, pk=pk, published_at__lte=now)
 
     # Three other recent stories to keep the visitor reading
@@ -64,3 +63,16 @@ def news_detail(request, pk):
         "more_news": more_news,
     }
     return render(request, "website/news_detail.html", context)
+
+
+def squad(request):
+    """The squad page: every current player with his season totals from EA."""
+    context = {
+        "active_page": "players",
+        # The season_* numbers on each player are copied from EA every time the import runs,
+        # so there is nothing to calculate here
+        "squad": Player.objects.filter(is_active=True),
+        # The season label from settings, e.g. "FC 27"
+        "season": settings.EA_SEASON,
+    }
+    return render(request, "website/squad.html", context)

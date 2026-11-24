@@ -1,0 +1,30 @@
+/* ==========================================================================
+   Squad page styles. Loaded only on /squad/, through the extra_css block in base.html.
+   Shared pieces (player cards, filter pills, the grid) are in site.css
+   ========================================================================== */
+
+/* Wider cards than the shared grid, so three numbers fit side by side */
+.squad-grid--full { grid-template-columns: repeat(auto-fill, minmax(min(240px, 100%), 1fr)); }
+
+.player-card__role { margin: 0; font-size: 14px; color: var(--muted); }
+
+/* ---------- Season numbers: Apps, Goals, Assists ---------- */
+.figures {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 10px 0 0; padding: 12px 0;
+  border-block: 1px solid var(--line);
+}
+/* column-reverse shows the number above its label, while the HTML keeps label first,
+   which is the order screen readers expect */
+.figures__item { display: flex; flex-direction: column-reverse; align-items: center; gap: 2px; }
+/* A thin divider between the three numbers */
+.figures__item + .figures__item { border-left: 1px solid var(--line); }
+/* The number */
+.figures dd { margin: 0; font-family: var(--font-display); font-size: 28px; line-height: 1; }
+/* The label under it */
+.figures dt {
+  font-family: var(--font-label); font-weight: 600; font-size: 13px;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted);
+}
+
+.figures__extra { margin: 8px 0 0; font-size: 14px; text-align: center; color: var(--ink-soft); }
