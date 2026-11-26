@@ -18,7 +18,7 @@
   <link rel="icon" href="{% static 'website/img/crest.jpg' %}">
   {# Styles shared by every page #}
   <link rel="stylesheet" href="{% static 'website/css/site.css' %}">
-  {# Shared pieces added later, such as opponent logos. New shared styles go here #}
+  {# Shared pieces added later, such as opponent logos and the phone menu. New shared styles go here #}
   <link rel="stylesheet" href="{% static 'website/css/components.css' %}">
   {# A slot where a page can add its own stylesheet. Empty unless a page fills it #}
   {% block extra_css %}{% endblock %}
@@ -36,8 +36,15 @@
         <span>Kenkey Boys</span>
       </a>
 
+      {# The phone menu button. Only shown on small screens, and only once site.js has made it work. #}
+      {# aria-expanded tells screen readers whether the menu is open; aria-controls says which menu it opens #}
+      <button type="button" class="menu-toggle" aria-expanded="false" aria-controls="site-nav">
+        <span class="menu-toggle__bars" aria-hidden="true"></span>
+        <span class="menu-toggle__text">Menu</span>
+      </button>
+
       {# active_page is sent by each view and marks which link is the current page #}
-      <nav class="site-nav" aria-label="Main">
+      <nav class="site-nav" id="site-nav" aria-label="Main">
         <a href="{% url 'website:home' %}" {% if active_page == "home" %}aria-current="page"{% endif %}>Home</a>
         <a href="{% url 'website:matches' %}" {% if active_page == "matches" %}aria-current="page"{% endif %}>Matches</a>
         <a href="{% url 'website:players' %}" {% if active_page == "players" %}aria-current="page"{% endif %}>Squad</a>

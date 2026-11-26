@@ -8,6 +8,44 @@
 const prefersLessMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 
+/* ---------- Phone menu ---------- */
+function setUpMobileMenu() {
+  const header = document.querySelector(".site-header");
+  const toggle = document.querySelector(".menu-toggle");
+  const nav = document.getElementById("site-nav");
+  if (!header || !toggle || !nav) return;
+
+  const label = toggle.querySelector(".menu-toggle__text");
+
+  // Open or close the menu, keeping the button's label and aria-expanded in step
+  function setOpen(open) {
+    nav.classList.toggle("is-open", open);
+    toggle.setAttribute("aria-expanded", String(open));
+    label.textContent = open ? "Close" : "Menu";
+  }
+
+  // Each tap flips it: open if closed, closed if open
+  toggle.addEventListener("click", () => setOpen(!nav.classList.contains("is-open")));
+
+  // The Escape key closes it and puts keyboard focus back on the button
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && nav.classList.contains("is-open")) {
+      setOpen(false);
+      toggle.focus();
+    }
+  });
+
+  // If the window is widened past phone size, the full menu shows anyway,
+  // so reset the button to "closed" for next time the window gets narrow
+  window.matchMedia("(min-width: 1025px)").addEventListener("change", (event) => {
+    if (event.matches) setOpen(false);
+  });
+
+  // Only now, with the button working, let the CSS fold the menu away on small screens
+  header.classList.add("menu-ready");
+}
+
+
 /* ---------- Live countdown to the next match ---------- */
 function startCountdown() {
   const clock = document.querySelector(".countdown[data-kickoff]");
@@ -203,6 +241,7 @@ function setUpCrestTilt() {
 
 
 /* ---------- Start everything ---------- */
+setUpMobileMenu();
 startCountdown();
 setUpNewsCarousel();
 setUpSquadFilter();

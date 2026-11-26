@@ -21,3 +21,63 @@
 /* Two other sizes: small for lists, large for the match page */
 .opponent-badge--sm { width: 40px; height: 40px; font-size: 16px; border-radius: 8px; }
 .opponent-badge--lg { width: 88px; height: 88px; font-size: 34px; border-radius: 12px; }
+
+/* ---------- Phone menu ---------- */
+/* The button is hidden by default. It only appears on small screens,
+   and only after site.js adds "menu-ready" to the header (see the media query below) */
+.menu-toggle {
+  display: none; align-items: center; gap: 10px;
+  min-height: 44px; padding: 8px 14px;
+  background: transparent; color: var(--ink);
+  border: 1px solid var(--line-strong); border-radius: 4px;
+  font-family: var(--font-label); font-weight: 700; font-size: 16px;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  cursor: pointer;
+}
+.menu-toggle:hover { border-color: var(--gold); }
+
+/* Three bars drawn with CSS: the span is the middle bar, ::before and ::after the top and bottom */
+.menu-toggle__bars { position: relative; width: 20px; height: 2px; background: currentColor; transition: background .2s ease; }
+.menu-toggle__bars::before,
+.menu-toggle__bars::after {
+  content: ""; position: absolute; left: 0;
+  width: 20px; height: 2px; background: currentColor;
+  transition: transform .2s ease;
+}
+.menu-toggle__bars::before { top: -6px; }
+.menu-toggle__bars::after { top: 6px; }
+
+/* When the menu is open, the middle bar fades and the other two turn into an X */
+.menu-toggle[aria-expanded="true"] .menu-toggle__bars { background: transparent; }
+.menu-toggle[aria-expanded="true"] .menu-toggle__bars::before { transform: translateY(6px) rotate(45deg); }
+.menu-toggle[aria-expanded="true"] .menu-toggle__bars::after { transform: translateY(-6px) rotate(-45deg); }
+
+@media (max-width: 1024px) {
+  /* Show the button */
+  .menu-ready .menu-toggle { display: inline-flex; }
+
+  /* Fold the menu away until the button opens it */
+  .menu-ready .site-nav { display: none; }
+
+  /* Open: a full-width list under the crest and the button.
+     width: 100% makes it wrap onto its own line inside the header */
+  .menu-ready .site-nav.is-open {
+    display: flex; flex-direction: column; align-items: stretch; gap: 0;
+    width: 100%; padding: 4px 0 16px;
+    border-top: 1px solid var(--line);
+    animation: menu-drop .2s ease both;
+  }
+  /* Each link becomes a tall row that is easy to tap */
+  .menu-ready .site-nav.is-open a:not(.btn) { padding: 14px 4px; border-bottom: 1px solid var(--line); }
+  /* The current page gets a gold bar on its left instead of the gold underline */
+  .menu-ready .site-nav.is-open a[aria-current="page"]:not(.btn) {
+    padding-left: 16px;
+    border-bottom-color: var(--line);
+    box-shadow: inset 4px 0 0 var(--gold);
+  }
+  /* The Join button sits a little apart at the bottom of the list */
+  .menu-ready .site-nav.is-open .btn { margin-top: 16px; }
+}
+
+/* The list slides down a few pixels as it appears */
+@keyframes menu-drop { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
