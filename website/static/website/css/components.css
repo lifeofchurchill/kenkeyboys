@@ -1,83 +1,345 @@
-/* ==========================================================================
-   Shared components added after site.css was finished. Loaded on every page by base.html.
-   New shared styles go in this file, so site.css never has to be replaced again
-   ========================================================================== */
+/* ==========================================================
+   components.css — shared pieces loaded on every page.
+   It loads after site.css, so these rules win when both
+   files style the same thing.
+   ========================================================== */
 
-/* ---------- Opponent badge: the club's logo, or its first letter ---------- */
-/* A rounded square, like our own crest, so logos fill it with very little trimmed off */
-.opponent-badge {
-  width: 56px; height: 56px; flex: none;
-  display: flex; align-items: center; justify-content: center;
-  overflow: hidden; border-radius: 10px;
-  background: var(--band); border: 1px solid var(--line-strong);
-  font-family: var(--font-display); font-size: 22px; color: var(--ink-soft);
+
+/* ---------- Page width safety net ---------- */
+
+/* Anything wider than the screen is trimmed instead of letting the
+   whole page slide sideways. "clip" (not "hidden") is used because
+   it keeps the sticky header working. */
+html,
+body {
+  overflow-x: clip;
 }
-/* cover: the logo fills the whole badge. If the picture's shape differs from the badge,
-   its edges are trimmed evenly instead of leaving empty space around it */
-.opponent-badge img { width: 100%; height: 100%; object-fit: cover; }
-/* A badge holding a logo only needs a faint outline */
-.opponent-badge:has(img) { border-color: var(--line); }
 
-/* Two other sizes: small for lists, large for the match page */
-.opponent-badge--sm { width: 40px; height: 40px; font-size: 16px; border-radius: 8px; }
-.opponent-badge--lg { width: 88px; height: 88px; font-size: 34px; border-radius: 12px; }
+/* Decorative pieces placed with "position: absolute" are positioned from
+   the nearest positioned parent. If there isn't one, they're positioned
+   from the browser window and slip past the trim above. A phone then
+   lets you drag the page sideways to see them: the white strip.
+   Making <body> their anchor means the trim catches everything. */
+body {
+  position: relative;
+}
 
-/* ---------- Phone menu ---------- */
-/* The button is hidden by default. It only appears on small screens,
-   and only after site.js adds "menu-ready" to the header (see the media query below) */
+/* Flex and grid children won't shrink below their content by default.
+   This lets the news carousel shrink to fit the screen instead. */
+.carousel,
+.carousel__track {
+  min-width: 0;
+  max-width: 100%;
+}
+
+
+/* ---------- No visible scroll bars on swipe areas ---------- */
+
+/* These strips scroll sideways, so the browser draws a scroll bar under
+   them. The carousel has its own dots and progress line, and the pills
+   are obviously swipeable, so the bars are hidden. Swiping still works. */
+.carousel__track,
+.switches,
+.switch,
+.news-filter,
+.squad-filter,
+.honours-filter {
+  scrollbar-width: none;            /* Chrome, Edge, Firefox, newer Safari */
+}
+
+.carousel__track::-webkit-scrollbar,
+.switches::-webkit-scrollbar,
+.switch::-webkit-scrollbar,
+.news-filter::-webkit-scrollbar,
+.squad-filter::-webkit-scrollbar,
+.honours-filter::-webkit-scrollbar {
+  display: none;                    /* older Safari on iPhones */
+}
+
+/* Letting a box scroll sideways quietly makes it scrollable up and down
+   too. The carousel only ever moves sideways, so the up-and-down
+   direction is switched off. That stops a thin bar appearing beside a story. */
+.carousel__track {
+  overflow-y: hidden;
+}
+
+/* Phones: hide the ratings table's bar too (people swipe on phones).
+   Computers keep it, so mouse users can see the table scrolls. */
+@media (max-width: 640px) {
+  .table-wrap {
+    scrollbar-width: none;
+  }
+
+  .table-wrap::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+
+/* ---------- Touch screens: hide the page's own scroll bar ---------- */
+
+/* "hover: none" + "pointer: coarse" means a screen you use with a finger
+   (phones and tablets). Computers with a mouse keep their scroll bar,
+   even if the browser window is made narrow. Scrolling still works. */
+@media (hover: none) and (pointer: coarse) {
+  html,
+  body {
+    scrollbar-width: none;          /* Chrome, Edge, Firefox, newer Safari */
+  }
+
+  html::-webkit-scrollbar,
+  body::-webkit-scrollbar {
+    display: none;                  /* older Safari on iPhones */
+  }
+}
+
+
+/* ---------- Phones: smaller crest in the home page hero ---------- */
+
+@media (max-width: 640px) {
+  /* About 170px on an iPhone SE, up to 200px on bigger phones */
+  .hero__crest {
+    flex: 0 0 auto;
+    width: clamp(140px, 45vw, 200px);
+    min-width: 0;                   /* cancels the 240px minimum from site.css */
+    margin-inline: auto;            /* centred */
+  }
+
+  /* The crest image fills its (now smaller) box; the ring keeps its own size rule */
+  .hero__crest img:not(.hero__ring) {
+    width: 100%;
+    height: auto;
+  }
+}
+
+
+/* ---------- Opponent badge (club logo, or first letter if no logo) ---------- */
+
+.opponent-badge {
+  display: inline-grid;
+  place-items: center;
+  flex: none;                 /* never squashed inside a flex row */
+  width: 56px;
+  height: 56px;
+  border-radius: 10px;
+  overflow: hidden;           /* keeps the logo inside the rounded corners */
+  background: var(--band);
+  color: var(--ink);
+  font-family: "Alfa Slab One", serif;
+  font-size: 22px;
+  line-height: 1;
+}
+
+/* The logo fills the whole badge */
+.opponent-badge img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* A faint edge so white logos don't vanish into the white page */
+.opponent-badge:has(img) {
+  background: var(--white);
+  border: 1px solid var(--line);
+}
+
+/* Small size: match rows */
+.opponent-badge--sm {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  font-size: 16px;
+}
+
+/* Large size: the scoreboard on a match page */
+.opponent-badge--lg {
+  width: 88px;
+  height: 88px;
+  border-radius: 12px;
+  font-size: 34px;
+}
+
+
+/* ---------- Menu button (only shown on tablets and phones) ---------- */
+
 .menu-toggle {
-  display: none; align-items: center; gap: 10px;
-  min-height: 44px; padding: 8px 14px;
-  background: transparent; color: var(--ink);
-  border: 1px solid var(--line-strong); border-radius: 4px;
-  font-family: var(--font-label); font-weight: 700; font-size: 16px;
-  letter-spacing: 0.1em; text-transform: uppercase;
+  display: none;              /* hidden until the screen is small and site.js is ready */
+  position: relative;
+  flex: none;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;          /* pushes the button to the right-hand side */
+  min-height: 44px;           /* 44px is a comfortable size for a thumb */
+  padding: 0 16px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--white);
+  color: var(--ink);
+  font: 600 16px/1 "Barlow Condensed", sans-serif;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   cursor: pointer;
 }
-.menu-toggle:hover { border-color: var(--gold); }
 
-/* Three bars drawn with CSS: the span is the middle bar, ::before and ::after the top and bottom */
-.menu-toggle__bars { position: relative; width: 20px; height: 2px; background: currentColor; transition: background .2s ease; }
+.menu-toggle:hover {
+  border-color: var(--line-strong);
+}
+
+.menu-toggle:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 2px;
+}
+
+/* Three bars: the span is the middle bar, ::before and ::after are the others */
+.menu-toggle__bars,
 .menu-toggle__bars::before,
 .menu-toggle__bars::after {
-  content: ""; position: absolute; left: 0;
-  width: 20px; height: 2px; background: currentColor;
-  transition: transform .2s ease;
+  display: block;
+  width: 18px;
+  height: 2px;
+  border-radius: 2px;
+  background: currentColor;
+  transition: transform 0.2s ease, background-color 0.2s ease;
 }
+
+.menu-toggle__bars {
+  position: relative;
+}
+
+.menu-toggle__bars::before,
+.menu-toggle__bars::after {
+  content: "";
+  position: absolute;
+  left: 0;
+}
+
 .menu-toggle__bars::before { top: -6px; }
-.menu-toggle__bars::after { top: 6px; }
+.menu-toggle__bars::after  { top: 6px; }
 
-/* When the menu is open, the middle bar fades and the other two turn into an X */
-.menu-toggle[aria-expanded="true"] .menu-toggle__bars { background: transparent; }
-.menu-toggle[aria-expanded="true"] .menu-toggle__bars::before { transform: translateY(6px) rotate(45deg); }
-.menu-toggle[aria-expanded="true"] .menu-toggle__bars::after { transform: translateY(-6px) rotate(-45deg); }
-
-@media (max-width: 1024px) {
-  /* Show the button */
-  .menu-ready .menu-toggle { display: inline-flex; }
-
-  /* Fold the menu away until the button opens it */
-  .menu-ready .site-nav { display: none; }
-
-  /* Open: a full-width list under the crest and the button.
-     width: 100% makes it wrap onto its own line inside the header */
-  .menu-ready .site-nav.is-open {
-    display: flex; flex-direction: column; align-items: stretch; gap: 0;
-    width: 100%; padding: 4px 0 16px;
-    border-top: 1px solid var(--line);
-    animation: menu-drop .2s ease both;
-  }
-  /* Each link becomes a tall row that is easy to tap */
-  .menu-ready .site-nav.is-open a:not(.btn) { padding: 14px 4px; border-bottom: 1px solid var(--line); }
-  /* The current page gets a gold bar on its left instead of the gold underline */
-  .menu-ready .site-nav.is-open a[aria-current="page"]:not(.btn) {
-    padding-left: 16px;
-    border-bottom-color: var(--line);
-    box-shadow: inset 4px 0 0 var(--gold);
-  }
-  /* The Join button sits a little apart at the bottom of the list */
-  .menu-ready .site-nav.is-open .btn { margin-top: 16px; }
+/* When the menu is open, the middle bar disappears and the other two
+   cross over to make an X */
+.menu-toggle[aria-expanded="true"] .menu-toggle__bars {
+  background-color: transparent;
 }
 
-/* The list slides down a few pixels as it appears */
-@keyframes menu-drop { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+.menu-toggle[aria-expanded="true"] .menu-toggle__bars::before {
+  transform: translateY(6px) rotate(45deg);
+}
+
+.menu-toggle[aria-expanded="true"] .menu-toggle__bars::after {
+  transform: translateY(-6px) rotate(-45deg);
+}
+
+
+/* ---------- Tablets and phones: the dropdown menu ---------- */
+
+/* "menu-ready" is added by site.js. If JavaScript fails, the plain
+   list of links from site.css still shows, so no one is locked out. */
+@media (max-width: 1024px) {
+  /* Crest left, button right, and the menu drops onto its own row below */
+  .menu-ready .site-header__inner {
+    flex-wrap: wrap;
+  }
+
+  .menu-ready .menu-toggle {
+    display: inline-flex;
+  }
+
+  /* The links stay hidden until the button is pressed */
+  .menu-ready .site-nav {
+    display: none;
+  }
+
+  .menu-ready .site-nav.is-open {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    width: 100%;
+    padding: 4px 0 16px;
+    border-top: 1px solid var(--line);
+    animation: menu-drop 0.2s ease both;
+  }
+
+  /* Each link is a full-width row that's easy to tap */
+  .menu-ready .site-nav.is-open a:not(.btn) {
+    display: block;
+    padding: 14px 12px;
+    border-bottom: 1px solid var(--line);
+    font-size: 18px;
+  }
+
+  /* A gold bar on the left marks the page you're on */
+  .menu-ready .site-nav.is-open a[aria-current]:not(.btn) {
+    box-shadow: inset 3px 0 0 var(--gold);
+  }
+
+  /* "Join the club" sits under the links */
+  .menu-ready .site-nav.is-open .btn {
+    margin-top: 16px;
+    justify-content: center;
+    text-align: center;
+  }
+}
+
+
+/* ---------- Phones: keep the crest and the button on one row ---------- */
+
+/* 480px covers every common phone (360px to 430px wide). */
+@media (max-width: 480px) {
+  /* The brand (crest + name) is the first item in the header.
+     Making it slightly smaller leaves room for the button. */
+  .site-header__inner > :first-child {
+    min-width: 0;
+    gap: 10px;
+    font-size: 20px;
+  }
+
+  .site-header__inner > :first-child img {
+    width: 32px;
+    height: auto;             /* keeps the crest's shape */
+  }
+
+  .site-header__inner > :first-child > :last-child {
+    font-size: 20px;
+  }
+
+  /* Round, icon-only button */
+  .menu-toggle {
+    width: 44px;
+    padding: 0;
+    justify-content: center;
+  }
+
+  /* "Menu" / "Close" is hidden from view, but screen readers still read it */
+  .menu-toggle__text {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
+
+/* ---------- Animation ---------- */
+
+@keyframes menu-drop {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* Visitors who've asked their phone for less motion get no animation */
+@media (prefers-reduced-motion: reduce) {
+  .menu-ready .site-nav.is-open {
+    animation: none;
+  }
+
+  .menu-toggle__bars,
+  .menu-toggle__bars::before,
+  .menu-toggle__bars::after {
+    transition: none;
+  }
+}

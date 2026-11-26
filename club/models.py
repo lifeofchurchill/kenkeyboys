@@ -126,7 +126,7 @@ class NewsPost(models.Model):
     title = models.CharField(max_length=150)
     category = models.CharField(max_length=15, choices=Category.choices, default=Category.CLUB_NEWS)
     # A one or two sentence teaser shown on the news cards
-    summary = models.CharField(max_length=250)
+    summary = models.CharField(max_length=350)
     body = models.TextField()
     image = models.ImageField(upload_to="news/", blank=True)
     # Defaults to now, but the captain can set a future time to schedule a post

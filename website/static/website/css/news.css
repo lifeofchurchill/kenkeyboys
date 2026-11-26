@@ -17,6 +17,8 @@
   border: 1px solid var(--line); border-radius: var(--radius);
   box-shadow: var(--shadow);
 }
+/* Show the whole picture instead of cropping it, as on the home page carousel */
+.featured .news-slide__photo { object-fit: contain; padding: 24px; }
 
 /* ---------- Story cards ---------- */
 .story-grid {
