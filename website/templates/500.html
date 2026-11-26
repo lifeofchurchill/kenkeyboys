@@ -1,0 +1,39 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Something went wrong · Kenkey Boys</title>
+
+  {# Standalone on purpose: no base.html and no database, because one of them may be what's broken #}
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&display=swap">
+  <link rel="stylesheet" href="{% static 'website/css/site.css' %}">
+  <link rel="stylesheet" href="{% static 'website/css/errors.css' %}">
+</head>
+<body>
+  <main class="error-page error-page--full">
+    <div class="container error-page__inner">
+
+      {# A plain "/" instead of {% url %}, so this link works even if the site's links are broken #}
+      <a class="error-brand" href="/">Kenkey Boys</a>
+
+      <span class="error-page__code" aria-hidden="true">500</span>
+
+      <p class="error-page__eyebrow">Error 500 · Server error</p>
+      <h1 class="error-page__title">Something went wrong on our side.</h1>
+      <p class="error-page__text">
+        It's not you. The site has hit a technical problem.
+        Please try again in a few minutes.
+      </p>
+
+      <a class="btn btn--gold" href="/">Back to home</a>
+
+      <p class="error-motto">Rooted in heritage, driven by passion</p>
+
+    </div>
+  </main>
+</body>
+</html>

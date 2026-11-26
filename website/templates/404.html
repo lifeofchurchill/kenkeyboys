@@ -1,0 +1,40 @@
+{% extends "website/base.html" %}
+{% load static %}
+
+{# Django shows this page whenever a page isn't found, e.g. an old link or a deleted story #}
+
+{% block title %}Page not found · Kenkey Boys{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'website/css/errors.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="error-page">
+  <div class="container error-page__inner">
+
+    {# Big decorative number; screen readers skip it because the line below says the same #}
+    <span class="error-page__code" aria-hidden="true">404</span>
+
+    <p class="error-page__eyebrow">Error 404 · Page not found</p>
+    <h1 class="error-page__title">Offside! This page isn't on the team sheet.</h1>
+
+    {# request_path is given to this page by Django: it's the address the visitor tried #}
+    <p class="error-page__text">
+      We couldn't find <strong>{{ request_path }}</strong>.
+      The link may be old, or the page has been moved or taken down.
+      Let's get you back in play.
+    </p>
+
+    <a class="btn btn--gold" href="{% url 'website:home' %}">Back to home</a>
+
+    {# The pages people are most likely looking for #}
+    <ul class="error-page__links">
+      <li><a href="{% url 'website:matches' %}">Fixtures &amp; results</a></li>
+      <li><a href="{% url 'website:news' %}">Latest news</a></li>
+      <li><a href="{% url 'website:players' %}">The squad</a></li>
+    </ul>
+
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,138 @@
+/* ==========================================================
+   errors.css — "Page not found" (404) and
+   "Something went wrong" (500) pages
+   ========================================================== */
+
+.error-page {
+  position: relative;
+  overflow: hidden;                 /* trims the giant number on narrow phones */
+  padding-block: clamp(56px, 10vw, 112px);
+  text-align: center;
+}
+
+/* The 500 page has no header or footer, so it fills the screen
+   and sits in the middle */
+.error-page--full {
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  min-height: 100dvh;               /* allows for a phone's address bar */
+}
+
+.error-page__inner {
+  max-width: 680px;
+}
+
+/* The giant outlined number, in the same style as the home page hero */
+.error-page__code {
+  display: block;
+  margin-bottom: 8px;
+  font-family: "Alfa Slab One", serif;
+  font-size: clamp(110px, 30vw, 240px);
+  line-height: 0.9;
+  color: transparent;
+  -webkit-text-stroke: 2px var(--gold);   /* outline only, no fill */
+  user-select: none;
+  animation: error-float 6s ease-in-out infinite;
+}
+
+/* Small gold line above the heading */
+.error-page__eyebrow {
+  margin: 0;
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--gold-text);
+}
+
+.error-page__title {
+  margin: 12px 0 16px;
+  font-family: "Alfa Slab One", serif;
+  font-size: clamp(28px, 5.5vw, 46px);
+  font-weight: 400;
+  line-height: 1.1;
+  color: var(--ink);
+  text-wrap: balance;               /* evens out the line lengths */
+}
+
+.error-page__text {
+  max-width: 52ch;
+  margin: 0 auto 32px;
+  font-size: 18px;
+  line-height: 1.6;
+  color: var(--ink-soft);
+}
+
+/* The address the visitor tried. Long links wrap instead of widening the page */
+.error-page__text strong {
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+
+/* Quick links under the button */
+.error-page__links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 28px;
+  margin: 32px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.error-page__links a {
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: var(--gold);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 6px;
+}
+
+.error-page__links a:hover {
+  color: var(--gold-text);
+}
+
+.error-page__links a:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 4px;
+}
+
+/* Club name at the top of the 500 page (it has no site header) */
+.error-brand {
+  display: inline-block;
+  margin-bottom: 24px;
+  font-family: "Alfa Slab One", serif;
+  font-size: 22px;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+/* Motto at the bottom of the 500 page */
+.error-motto {
+  margin: 40px 0 0;
+  font-family: "Barlow Condensed", sans-serif;
+  font-size: 14px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* A gentle up-and-down float on the big number */
+@keyframes error-float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-10px); }
+}
+
+/* No floating for visitors who've asked for less motion */
+@media (prefers-reduced-motion: reduce) {
+  .error-page__code {
+    animation: none;
+  }
+}

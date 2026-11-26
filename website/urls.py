@@ -2,13 +2,11 @@ from django.urls import path
 
 from . import views
 
-# The namespace that lets templates write {% url 'website:home' %}
 app_name = "website"
 
 urlpatterns = [
     path("", views.home, name="home"),
     path("matches/", views.matches, name="matches"),
-    # <int:pk> captures a whole number from the address and passes it to the view as pk
     path("matches/<int:pk>/", views.match_detail, name="match_detail"),
     path("squad/", views.squad, name="players"),
     path("news/", views.news, name="news"),
