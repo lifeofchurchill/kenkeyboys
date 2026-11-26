@@ -1,0 +1,93 @@
+{% extends "website/base.html" %}
+{% load static %}
+
+{% block title %}Trophy room · Kenkey Boys FC{% endblock %}
+
+{# This page's own styles, placed into the extra_css slot in base.html #}
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'website/css/honours.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="page-band">
+  <div class="container">
+    <p class="eyebrow">Est. 2026</p>
+    <h1 class="page-band__title">Trophy room</h1>
+  </div>
+</section>
+
+{# ---------- Trophy cabinet ---------- #}
+<section class="container section">
+
+  {# Filter links with a count on each, e.g. "Team 3" #}
+  <nav class="honours-filter" aria-label="Filter honours">
+    <a class="pill" href="?kind=all" {% if kind == "all" %}aria-current="true"{% endif %}>
+      All <span class="pill__count">{{ counts.total }}</span>
+    </a>
+    <a class="pill" href="?kind=team" {% if kind == "team" %}aria-current="true"{% endif %}>
+      Team <span class="pill__count">{{ counts.team }}</span>
+    </a>
+    <a class="pill" href="?kind=individual" {% if kind == "individual" %}aria-current="true"{% endif %}>
+      Individual <span class="pill__count">{{ counts.individual }}</span>
+    </a>
+  </nav>
+
+  {# Reuses the trophy cards from the home page (styled in site.css) #}
+  <div class="honours-grid reveal">
+    {% for trophy in trophies %}
+      <article class="card card--padded trophy-card lift">
+        {% if trophy.image %}
+          <img class="trophy-card__image" src="{{ trophy.image.url }}" alt="">
+        {% else %}
+          <svg class="trophy-card__icon" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4zM7 6H4v1a3 3 0 0 0 3 3M17 6h3v1a3 3 0 0 1-3 3"/></svg>
+        {% endif %}
+        {# get_kind_display turns "team" into "Team" #}
+        <span class="tag trophy-card__kind">{{ trophy.get_kind_display }}</span>
+        <h2 class="trophy-card__name">{{ trophy.name }}</h2>
+        {# Individual awards also show who won them #}
+        <p class="trophy-card__meta">{{ trophy.season }}{% if trophy.player %} · {{ trophy.player.display_name }}{% endif %}</p>
+      </article>
+    {% endfor %}
+
+    {# Always shown at the end, even when the cabinet is empty #}
+    <article class="card card--padded trophy-card trophy-card--next">
+      <svg class="trophy-card__icon trophy-card__icon--muted" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+      <h2 class="trophy-card__name">Space for the next one</h2>
+      <p class="trophy-card__meta">The cabinet is never full.</p>
+    </article>
+  </div>
+</section>
+
+{# ---------- The club story ---------- #}
+<section class="band" aria-labelledby="story-heading">
+  <div class="container section story">
+
+    <div class="story__intro reveal">
+      <p class="eyebrow">Our story</p>
+      <h2 class="section-title" id="story-heading">Rooted in heritage</h2>
+      {# Replace this paragraph with the club's own words: how it started, #}
+      {# what the name means, and the story behind the crest #}
+      <p class="story__text">Kenkey Boys Football Club was founded in 2026. Every trophy in the cabinet was won together, and every chapter below is part of the same story.</p>
+    </div>
+
+    {# The timeline, built from the Milestones added in the admin #}
+    <ol class="timeline reveal reveal--delay">
+      {% for milestone in milestones %}
+        <li class="timeline__item">
+          <span class="timeline__year">{{ milestone.year }}</span>
+          <h3 class="timeline__title">{{ milestone.title }}</h3>
+          {% if milestone.description %}
+            <p class="timeline__text">{{ milestone.description }}</p>
+          {% endif %}
+        </li>
+      {% endfor %}
+      {# Always the last point on the line, with a dashed ring: the next chapter #}
+      <li class="timeline__item timeline__item--next">
+        <span class="timeline__year">Next</span>
+        <h3 class="timeline__title">The story continues</h3>
+      </li>
+    </ol>
+
+  </div>
+</section>
+{% endblock %}

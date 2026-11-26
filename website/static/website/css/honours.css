@@ -1,0 +1,54 @@
+/* ==========================================================================
+   Honours page styles. Loaded only on /honours/, through the extra_css block in base.html.
+   The trophy cards themselves are styled in site.css, shared with the home page
+   ========================================================================== */
+
+/* ---------- Filter pills with counts ---------- */
+.honours-filter { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 28px; }
+.honours-filter .pill {
+  display: inline-flex; align-items: center; gap: 10px;
+  color: var(--ink); text-decoration: none;
+}
+.honours-filter .pill[aria-current] { background: var(--gold); border-color: var(--gold); }
+/* The small number inside each pill */
+.pill__count {
+  min-width: 26px; padding: 1px 7px; border-radius: 99px;
+  background: var(--band); font-size: 14px; text-align: center;
+}
+.pill[aria-current] .pill__count { background: rgba(255, 255, 255, 0.55); }
+
+/* Team or Individual label on each card; it sits at the start of the row instead of stretching */
+.trophy-card__kind { align-self: flex-start; }
+
+/* ---------- The club story: intro on the left, timeline on the right ---------- */
+.story { display: flex; flex-wrap: wrap; gap: 48px; }
+.story__intro { flex: 1 1 320px; min-width: 0; display: flex; flex-direction: column; gap: 12px; }
+.story__text { margin: 0; max-width: 440px; font-size: 18px; color: var(--ink-soft); }
+
+/* ---------- Timeline ---------- */
+.timeline {
+  position: relative; flex: 2 1 480px; min-width: 0;
+  margin: 0; padding: 0; list-style: none;
+  display: flex; flex-direction: column; gap: 32px;
+}
+/* The vertical line running through every point */
+.timeline::before {
+  content: ""; position: absolute; left: 8px; top: 10px; bottom: 10px;
+  width: 2px; background: #D9D4C7;
+}
+.timeline__item { position: relative; padding-left: 44px; display: flex; flex-direction: column; gap: 4px; }
+/* The dot on the line for each moment */
+.timeline__item::before {
+  content: ""; position: absolute; left: 0; top: 6px;
+  width: 18px; height: 18px; border-radius: 50%;
+  background: var(--white); border: 3px solid var(--line-strong);
+}
+/* The first moment (the founding) gets a gold dot */
+.timeline__item:first-child::before { background: var(--gold); border-color: var(--gold); }
+/* The last point, "Next", gets a dashed ring */
+.timeline__item--next::before { border-style: dashed; }
+
+.timeline__year { font-family: var(--font-display); font-size: 28px; line-height: 1; color: var(--gold-text); }
+.timeline__item--next .timeline__year { color: var(--muted); }
+.timeline__title { margin: 0; font-size: 20px; font-weight: 700; }
+.timeline__text { margin: 0; color: var(--muted); }

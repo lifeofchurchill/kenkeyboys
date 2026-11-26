@@ -11,10 +11,11 @@ from club.models import NewsPost, Player, Trophy
 from matches.models import Competition, Match
 
 from .forms import TrialRequestForm
+from .models import ClubInfo, Milestone
 
 # The phrases in the scrolling gold band. Edit them here to change the band.
 # The list is doubled so one copy is wider than even a large screen
-TICKER_PHRASES = ["Rooted in heritage", "Driven by passion", "Kenkey Boys Football Club", "Est. 2024"] * 2
+TICKER_PHRASES = ["Rooted in heritage", "Driven by passion", "Kenkey Boys Football Club", "Est. 2026"] * 2
 
 # At most 5 trial requests per hour from one internet connection
 TRIAL_LIMIT = 5
@@ -241,3 +242,54 @@ def match_detail(request, pk):
         "motm": motm,
     }
     return render(request, "website/match_detail.html", context)
+
+
+def honours(request):
+    """The trophy room and the club story, at /honours/ and /honours/?kind=team or individual."""
+    trophies = Trophy.objects.select_related("player")
+
+    # How many of each kind, for the numbers on the filter pills. Counted before
+    # filtering, so the pills always show the full totals whichever one is chosen
+    counts = trophies.aggregate(
+        total=Count("id"),
+        team=Count("id", filter=Q(kind=Trophy.Kind.TEAM)),
+        individual=Count("id", filter=Q(kind=Trophy.Kind.INDIVIDUAL)),
+    )
+
+    # Only accept a kind the model defines; anything else means "all"
+    kind = request.GET.get("kind")
+    if kind not in Trophy.Kind.values:
+        kind = "all"
+    if kind != "all":
+        trophies = trophies.filter(kind=kind)
+
+    context = {
+        "active_page": "honours",
+        "trophies": trophies,
+        "counts": counts,
+        "kind": kind,
+        # The club's story, oldest first (the order set in the Milestone model)
+        "milestones": Milestone.objects.all(),
+    }
+    return render(request, "website/honours.html", context)
+
+
+def about(request):
+    """The About page: who the club is, quick facts, and how to get in touch."""
+    # The single set of club details, or None if it has not been filled in yet.
+    # .first() returns None instead of an error when there is nothing
+    info = ClubInfo.objects.first()
+
+    # Quick facts, counted live, so they are always up to date.
+    # count() asks the database "how many?" without fetching the rows themselves
+    facts = {
+        "squad": Player.objects.filter(is_active=True).count(),
+        "trophies": Trophy.objects.count(),
+    }
+
+    context = {
+        "active_page": "about",
+        "info": info,
+        "facts": facts,
+    }
+    return render(request, "website/about.html", context)
