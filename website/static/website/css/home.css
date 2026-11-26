@@ -1,0 +1,85 @@
+/* ==========================================================================
+   Home page styles added later. Loaded only on the home page, through the
+   extra_css block in base.html. The rest of the home page is styled in site.css
+   ========================================================================== */
+
+/* ---------- Latest news carousel: show the whole picture ---------- */
+/* site.css used "cover", which fills the space by cutting off the edges.
+   "contain" fits the entire picture inside instead; the padding keeps it off the edges,
+   and the tinted background behind fills any space around it */
+.news-slide__photo { object-fit: contain; padding: 24px; }
+
+/* ---------- Match report banner ---------- */
+/* Room under the banner for the small cards that overlap its bottom edge */
+.report-hero { padding-bottom: 72px; }
+
+.report-hero__main {
+  position: relative; overflow: hidden;
+  display: flex; align-items: flex-end;
+  min-height: clamp(420px, 56vw, 640px);
+  background: var(--ink); color: var(--white); text-decoration: none;
+}
+.report-hero__main:hover { color: var(--white); }
+
+/* The photo fills the whole banner. For a wide banner, "cover" is right:
+   upload a wide picture, such as a screenshot from the game */
+.report-hero__image {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%; object-fit: cover;
+  transition: transform 1.2s ease;
+}
+/* A slow zoom on hover, like a camera pushing in */
+.report-hero__main:hover .report-hero__image { transform: scale(1.04); }
+
+/* Darkens the lower part of the picture so the white text is always readable */
+.report-hero__shade {
+  position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0) 25%, rgba(0, 0, 0, 0.55) 60%, rgba(0, 0, 0, 0.88) 100%);
+}
+
+.report-hero__content {
+  position: relative; width: 100%;
+  display: flex; flex-direction: column; align-items: center; gap: 16px;
+  text-align: center;
+  /* Extra space at the bottom, where the small cards overlap */
+  padding-block: 48px 140px;
+}
+.report-hero__title {
+  display: block; max-width: 1000px;
+  font-family: var(--font-display);
+  font-size: clamp(32px, 5.4vw, 72px); line-height: 1.05; text-transform: uppercase;
+  /* Spreads the words evenly across lines instead of leaving one word alone on the last line */
+  text-wrap: balance;
+  animation: rise .7s ease both;
+}
+.report-hero__meta { font-size: 18px; color: rgba(255, 255, 255, 0.85); }
+
+/* With only one match report there are no small cards, so no space is kept for them */
+.report-hero--single { padding-bottom: 0; }
+.report-hero--single .report-hero__content { padding-bottom: 64px; }
+
+/* ---------- The smaller reports overlapping the banner ---------- */
+.report-hero__more {
+  position: relative; z-index: 1;
+  /* A negative margin pulls the cards up over the banner's bottom edge */
+  margin-top: -100px;
+  display: grid; gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr));
+}
+.report-thumb {
+  display: flex; flex-direction: column;
+  background: var(--white); color: var(--ink); text-decoration: none;
+  border: 1px solid var(--line); border-radius: var(--radius);
+  box-shadow: var(--shadow-hover);
+}
+.report-thumb:hover { color: var(--ink); }
+.report-thumb__media {
+  position: relative; aspect-ratio: 16 / 9;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--band);
+}
+.report-thumb__photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.report-thumb__crest { width: 56px; border-radius: 6px; }
+.report-thumb__body { display: flex; flex-direction: column; gap: 6px; padding: 16px 18px 18px; }
+.report-thumb__title { font-weight: 700; font-size: 18px; line-height: 1.3; }
+.report-thumb__meta { font-size: 14px; color: var(--muted); }

@@ -1,0 +1,17 @@
+/* ==========================================================================
+   Article page styles. Loaded only on a single news story, through the
+   extra_css block in base.html. The rest of the article is styled in site.css
+   ========================================================================== */
+
+/* Subheadings typed as "## " in the admin */
+.article__body h2 {
+  margin: 1.6em 0 0.5em;
+  font-family: var(--font-label); font-weight: 700; font-size: 26px;
+  letter-spacing: 0.04em; text-transform: uppercase;
+  color: var(--ink);
+}
+/* No big gap above a subheading that starts the story */
+.article__body h2:first-child { margin-top: 0; }
+
+/* Words typed between **double stars** */
+.article__body strong { font-weight: 700; color: var(--ink); }

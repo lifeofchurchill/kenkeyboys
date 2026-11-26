@@ -47,14 +47,10 @@
         {# Individual awards also show who won them #}
         <p class="trophy-card__meta">{{ trophy.season }}{% if trophy.player %} · {{ trophy.player.display_name }}{% endif %}</p>
       </article>
+    {% empty %}
+      {# Shown instead of the cards when there are none of the chosen kind #}
+      <p class="empty">No trophies here yet.</p>
     {% endfor %}
-
-    {# Always shown at the end, even when the cabinet is empty #}
-    <article class="card card--padded trophy-card trophy-card--next">
-      <svg class="trophy-card__icon trophy-card__icon--muted" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
-      <h2 class="trophy-card__name">Space for the next one</h2>
-      <p class="trophy-card__meta">The cabinet is never full.</p>
-    </article>
   </div>
 </section>
 

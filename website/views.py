@@ -36,7 +36,7 @@ def countdown_parts(kickoff, now):
 
 
 def home(request):
-    """The home page: next match, recent form, latest news and honours."""
+    """The home page: match report banner, next match, recent form, latest news and honours."""
     now = timezone.now()
     # Every match shown on this page needs its competition and opponent,
     # so fetch them in the same query instead of one extra query per match
@@ -49,15 +49,26 @@ def home(request):
         .first()
     )
 
+    # Only stories whose publish time has arrived
+    published = NewsPost.objects.filter(published_at__lte=now)
+
+    # The four newest match reports: the first gets the big banner, the other three sit under it.
+    # list() fetches them once, so slicing it below costs nothing extra
+    reports = list(published.filter(category=NewsPost.Category.MATCH_REPORT)[:4])
+
     context = {
         "active_page": "home",
         "ticker": TICKER_PHRASES,
+        # None when there are no match reports yet, which hides the banner
+        "featured_report": reports[0] if reports else None,
+        "more_reports": reports[1:],
         "next_match": next_match,
         "countdown": countdown_parts(next_match.kickoff, now) if next_match else None,
         # The five latest results, newest first
         "recent_results": matches_with_details.filter(status=Match.Status.FINISHED)[:5],
-        # The five newest stories whose publish time has arrived, for the rotating section
-        "latest_news": NewsPost.objects.filter(published_at__lte=now)[:5],
+        # The rotating news shows everything except match reports, which have the banner above.
+        # exclude() is the opposite of filter(): "all of these except..."
+        "latest_news": published.exclude(category=NewsPost.Category.MATCH_REPORT)[:5],
         # The three latest honours
         "trophies": Trophy.objects.select_related("player")[:3],
     }

@@ -1,0 +1,61 @@
+{% extends "website/base.html" %}
+{% load static %}
+{# Our own filters from website/templatetags/club_extras.py #}
+{% load club_extras %}
+
+{# The browser tab shows the story's headline #}
+{% block title %}{{ post.title }} · Kenkey Boys FC{% endblock %}
+
+{# This page's own styles, placed into the extra_css slot in base.html #}
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'website/css/article.css' %}">
+{% endblock %}
+
+{% block content %}
+<article>
+  <header class="page-band">
+    <div class="container">
+      <a class="back-link" href="{% url 'website:news' %}">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
+        All news
+      </a>
+      {# get_category_display gives the readable label, e.g. "Club news" #}
+      <p class="eyebrow">{{ post.get_category_display }}</p>
+      <h1 class="page-band__title article-title">{{ post.title }}</h1>
+      <p class="article-date">
+        <time datetime="{{ post.published_at|date:'c' }}">{{ post.published_at|date:"l j F Y" }}</time>
+      </p>
+    </div>
+  </header>
+
+  <div class="container article">
+    {% if post.image %}
+      <img class="article__image" src="{{ post.image.url }}" alt="">
+    {% endif %}
+    <p class="article__summary">{{ post.summary }}</p>
+    {# article_body: paragraphs, "## " subheadings and **bold**, with everything else escaped #}
+    <div class="article__body">{{ post.body|article_body }}</div>
+  </div>
+</article>
+
+{# Three other recent stories, so the visitor keeps reading #}
+{% if more_news %}
+  <section class="band">
+    <div class="container section">
+      <div class="section-head">
+        <p class="eyebrow">Keep reading</p>
+        <h2 class="section-title">More news</h2>
+      </div>
+      <div class="news-grid">
+        {% for item in more_news %}
+          <a class="news-card lift" href="{% url 'website:news_detail' item.pk %}">
+            <span class="tag tag--gold">{{ item.get_category_display }}</span>
+            <h3 class="news-card__title">{{ item.title }}</h3>
+            <p class="news-card__date">{{ item.published_at|date:"j M Y" }}</p>
+          </a>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+{% endif %}
+{% endblock %}
