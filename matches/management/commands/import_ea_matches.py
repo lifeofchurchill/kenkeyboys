@@ -96,7 +96,7 @@ class Command(BaseCommand):
         """Give a fixture the result of its game on EA. Returns True if anything changed."""
         start = fixture.kickoff - self.EARLIEST
         end = self.window_end(fixture)
-        # The opponent is now an Opponent entry, so its name is fixture.opponent.name
+        # The opponent is an Opponent entry, so its name is fixture.opponent.name
         wanted_opponent = fixture.opponent.name.strip().lower()
 
         # Collect every EA match against this club inside the time window
@@ -111,10 +111,12 @@ class Command(BaseCommand):
             return False  # not played yet, or not on EA yet
 
         # Prefer games played to the end, falling back to a forfeit only if nothing else fits.
-        # Among those, the latest wins, so a replay always replaces the abandoned game before it
+        # Among those, the game played closest to the kick-off time the captain entered wins.
+        # So when you play the same club several times in one night, the kick-off time
+        # decides which game counts, and changing it (then re-running) switches the game.
         completed = [c for c in candidates if not self.is_forfeit(c[1])]
-        # key=...: compare candidates by their time (the first item of each pair)
-        _, chosen = max(completed or candidates, key=lambda c: c[0])
+        # key=...: compare candidates by how far their time is from kick-off, in either direction
+        _, chosen = min(completed or candidates, key=lambda c: abs(c[0] - fixture.kickoff))
         ea_id = str(chosen["matchId"])
 
         if fixture.ea_match_id == ea_id:
@@ -144,7 +146,7 @@ class Command(BaseCommand):
         # update_fields saves only these columns; competition, opponent and kick-off stay as the captain set them
         fixture.save(update_fields=["ea_match_id", "status", "our_score", "opponent_score"])
 
-        # Clear any stat lines from an earlier attempt (e.g. the forfeit) before adding the new ones
+        # Clear any stat lines from an earlier attempt (e.g. the wrong game) before adding the new ones
         fixture.stats.all().delete()
         self.add_player_stats(fixture, raw, our_id, players)
 
@@ -157,7 +159,8 @@ class Command(BaseCommand):
 
     def is_forfeit(self, raw):
         """True if EA says either side won because the other quit or disconnected."""
-        return any(club.get("winnerByDnf") == "1" for club in raw["clubs"].values())
+        # str(...) so it works whether EA sends "1" or 1
+        return any(str(club.get("winnerByDnf")) == "1" for club in raw["clubs"].values())
 
     def add_player_stats(self, match, raw, our_id, players):
         """Create a stat line for each squad member who played in this match."""
@@ -176,7 +179,8 @@ class Command(BaseCommand):
                 assists=int(ea_player["assists"]),
                 # "6.10" -> 6.1, to fit our one-decimal rating field
                 rating=round(Decimal(ea_player["rating"]), 1),
-                is_motm=ea_player["mom"] == "1",
+                # str(...) so it works whether EA sends "1" or 1
+                is_motm=str(ea_player["mom"]) == "1",
             )
 
     def update_totals(self, players):
