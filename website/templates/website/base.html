@@ -14,8 +14,30 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&display=swap">
 
+  {# ---------- Icons (made from the crest by make_icons.py) ---------- #}
   {# {% static %} turns a path inside the static folders into its real web address #}
-  <link rel="icon" href="{% static 'website/img/crest.jpg' %}">
+  {# Browser tabs, bookmarks and Google results #}
+  <link rel="icon" href="{% static 'website/img/icons/favicon.ico' %}" sizes="48x48">
+  {# A sharper version for screens that can show a bigger icon #}
+  <link rel="icon" href="{% static 'website/img/icons/icon-192.png' %}" type="image/png" sizes="192x192">
+  {# Used when someone adds the site to an iPhone home screen #}
+  <link rel="apple-touch-icon" href="{% static 'website/img/icons/apple-touch-icon.png' %}">
+  {# Colours the phone browser's top bar to match the white header #}
+  <meta name="theme-color" content="#FFFFFF">
+
+  {# ---------- Link previews (WhatsApp, X, Facebook, Discord) ---------- #}
+  {# These "og" tags decide the picture, title and text shown when the link is shared. #}
+  {# A page can fill the blocks to preview itself, e.g. a news story with its own picture #}
+  <meta property="og:site_name" content="Kenkey Boys FC">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="{% block og_title %}Kenkey Boys Football Club{% endblock %}">
+  <meta property="og:description" content="{% block og_description %}Rooted in heritage, driven by passion. Fixtures, results, squad and honours.{% endblock %}">
+  {# Preview apps need the full address, so the site's own name is put in front of the image path #}
+  <meta property="og:image" content="https://{{ request.get_host }}{% block og_image %}{% static 'website/img/icons/share-card.png' %}{% endblock %}">
+  <meta property="og:url" content="https://{{ request.get_host }}{{ request.path }}">
+  {# Asks X (Twitter) for the big picture style of preview #}
+  <meta name="twitter:card" content="summary_large_image">
+
   {# Styles shared by every page #}
   <link rel="stylesheet" href="{% static 'website/css/site.css' %}">
   {# Shared pieces added later, such as opponent logos and the phone menu. New shared styles go here #}
