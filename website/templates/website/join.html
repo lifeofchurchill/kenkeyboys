@@ -23,7 +23,7 @@
     {# An ordered list, numbered in gold circles by join.css #}
     <ol class="join__steps">
       <li><strong>Send your request</strong><span>It takes a minute.</span></li>
-      <li><strong>The captain reviews it</strong><span>He checks your position and platform against what the squad needs.</span></li>
+      <li><strong>The captain reviews it</strong><span>He checks your position and platform against what the squad needs, then replies to your email.</span></li>
       <li><strong>Trial night</strong><span>Play a few games with the squad and show what you can do.</span></li>
     </ol>
   </div>
@@ -50,6 +50,13 @@
         <label for="{{ form.gamertag.id_for_label }}">{{ form.gamertag.label }}</label>
         {{ form.gamertag }}
         {% for error in form.gamertag.errors %}<p class="field__error">{{ error }}</p>{% endfor %}
+      </div>
+
+      {# Where the captain replies. Only visible in the admin, never on the site #}
+      <div class="field{% if form.email.errors %} field--error{% endif %}">
+        <label for="{{ form.email.id_for_label }}">{{ form.email.label }}</label>
+        {{ form.email }}
+        {% for error in form.email.errors %}<p class="field__error">{{ error }}</p>{% endfor %}
       </div>
 
       <div class="field-row">

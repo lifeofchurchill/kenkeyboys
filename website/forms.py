@@ -15,18 +15,27 @@ class TrialRequestForm(forms.ModelForm):
         model = TrialRequest
         # Only what the applicant may fill in. "status" is left out on purpose:
         # that is the captain's decision, never the visitor's
-        fields = ["gamertag", "position", "platform", "message"]
+        fields = ["gamertag", "email", "position", "platform", "message"]
         # The wording shown above each box
         labels = {
             "gamertag": "Gamertag / PSN ID",
+            "email": "Email (only used to reply about your trial)",
             "position": "Best position",
             "platform": "Platform",
             "message": "Anything else? (optional)",
         }
-        # A taller box for the message
         widgets = {
+            # autocomplete="email" lets phones fill in the address with one tap
+            "email": forms.EmailInput(attrs={"autocomplete": "email"}),
+            # A taller box for the message
             "message": forms.Textarea(attrs={"rows": 4}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # The model allows a blank email (for old requests), but every new
+        # applicant must give one, or the captain has no way to reply
+        self.fields["email"].required = True
 
     def clean_gamertag(self):
         """Extra checks on the gamertag. Django runs any method named clean_<field> automatically."""
@@ -43,3 +52,7 @@ class TrialRequestForm(forms.ModelForm):
 
         # Whatever is returned here is what gets saved
         return gamertag
+
+    def clean_email(self):
+        """Tidy the email: no stray spaces, all lower case, so it's stored one consistent way."""
+        return self.cleaned_data["email"].strip().lower()

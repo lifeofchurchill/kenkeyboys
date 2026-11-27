@@ -148,6 +148,10 @@ class TrialRequest(models.Model):
         DECLINED = "declined", "Declined"
 
     gamertag = models.CharField(max_length=50)
+    # Where the captain replies about the trial.
+    # blank=True only so requests sent before this field existed stay valid;
+    # the Join form makes it required for every new applicant
+    email = models.EmailField(blank=True)
     # Reuse the choices already defined on Player so both stay in step
     position = models.CharField(max_length=3, choices=Player.Position.choices)
     platform = models.CharField(max_length=4, choices=Player.Platform.choices)
