@@ -1,4 +1,4 @@
-{% load static %}
+{% load static seo %}
 <!doctype html>
 <html lang="en">
 <head>
@@ -7,7 +7,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   {# Each page can replace this by filling in its own "title" block #}
   <title>{% block title %}Kenkey Boys FC · Rooted in heritage, driven by passion{% endblock %}</title>
-  <meta name="description" content="Kenkey Boys Football Club, an FC 27 Pro Clubs team. Fixtures, results, squad and honours.">
+  {# The short text Google shows under the link. Pages can fill in their own #}
+  <meta name="description" content="{% block description %}Kenkey Boys Football Club, an FC 27 Pro Clubs team. Fixtures, results, squad and honours.{% endblock %}">
 
   {# Fonts: Alfa Slab One for headlines, Barlow for text, Barlow Condensed for labels #}
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -26,15 +27,15 @@
   <meta name="theme-color" content="#FFFFFF">
 
   {# ---------- Link previews (WhatsApp, X, Facebook, Discord) ---------- #}
-  {# These "og" tags decide the picture, title and text shown when the link is shared. #}
-  {# A page can fill the blocks to preview itself, e.g. a news story with its own picture #}
+  {# These "og" tags decide the picture, title and text shown when a link is shared. #}
+  {# Every block has a club-wide default; a page like a news story fills in its own #}
   <meta property="og:site_name" content="Kenkey Boys FC">
-  <meta property="og:type" content="website">
+  <meta property="og:type" content="{% block og_type %}website{% endblock %}">
   <meta property="og:title" content="{% block og_title %}Kenkey Boys Football Club{% endblock %}">
   <meta property="og:description" content="{% block og_description %}Rooted in heritage, driven by passion. Fixtures, results, squad and honours.{% endblock %}">
-  {# Preview apps need the full address, so the site's own name is put in front of the image path #}
-  <meta property="og:image" content="https://{{ request.get_host }}{% block og_image %}{% static 'website/img/icons/share-card.png' %}{% endblock %}">
-  <meta property="og:url" content="https://{{ request.get_host }}{{ request.path }}">
+  {# Preview apps need a FULL picture address; absolute_url makes sure it is one #}
+  <meta property="og:image" content="{% block og_image %}{% static 'website/img/icons/share-card.png' as share_card %}{% absolute_url share_card %}{% endblock %}">
+  <meta property="og:url" content="{% absolute_url request.path %}">
   {# Asks X (Twitter) for the big picture style of preview #}
   <meta name="twitter:card" content="summary_large_image">
 

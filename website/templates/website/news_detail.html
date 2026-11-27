@@ -1,10 +1,20 @@
 {% extends "website/base.html" %}
 {% load static %}
-{# Our own filters from website/templatetags/club_extras.py #}
-{% load club_extras %}
+{# Our own filters from club_extras.py, and absolute_url from seo.py #}
+{% load club_extras seo %}
 
 {# The browser tab shows the story's headline #}
 {% block title %}{{ post.title }} · Kenkey Boys FC{% endblock %}
+
+{# ---------- Link preview: this story's own card on WhatsApp, X and Google ---------- #}
+{# Google shows the summary under the link #}
+{% block description %}{{ post.summary }}{% endblock %}
+{# "article" tells preview apps this page is a story, not the club's home page #}
+{% block og_type %}article{% endblock %}
+{% block og_title %}{{ post.title }}{% endblock %}
+{% block og_description %}{{ post.summary }}{% endblock %}
+{# The story's picture if it has one; otherwise block.super keeps the club's share card #}
+{% block og_image %}{% if post.image %}{% absolute_url post.image.url %}{% else %}{{ block.super }}{% endif %}{% endblock %}
 
 {# This page's own styles, placed into the extra_css slot in base.html #}
 {% block extra_css %}
