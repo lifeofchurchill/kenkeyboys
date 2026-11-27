@@ -185,6 +185,26 @@ if os.environ.get("AWS_STORAGE_BUCKET_NAME"):
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
+# ---------- Logging ----------
+
+# With debug off, Django normally only EMAILS error details to the site's admins.
+# This prints them to the console instead, which Vercel shows on its Logs page.
+# Visitors still only see the friendly 500 page.
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {"class": "logging.StreamHandler"},
+    },
+    # Warnings and errors from any of our own code
+    "root": {"handlers": ["console"], "level": "WARNING"},
+    "loggers": {
+        # Django's own messages: only real errors (skips "Not Found" noise from bots)
+        "django": {"handlers": ["console"], "level": "ERROR", "propagate": False},
+    },
+}
+
+
 # ---------- API ----------
 
 REST_FRAMEWORK = {
