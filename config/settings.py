@@ -3,7 +3,7 @@ Settings for the Kenkey Boys website.
 
 Anything secret, or anything that differs between your laptop and the
 live server (the secret key, debug mode, the site's address, the database,
-the photo storage), is read from a file called .env next to manage.py,
+the photo storage, email), is read from a file called .env next to manage.py,
 or from the host's environment variables. That file is never committed to git.
 """
 
@@ -183,6 +183,19 @@ if os.environ.get("AWS_STORAGE_BUCKET_NAME"):
 
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+
+# ---------- Email (Resend) ----------
+
+# Resend's API key. Without it (e.g. on the laptop), emails are printed in the
+# terminal instead of sent, so testing never emails real applicants
+RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "")
+# Who the emails come from. Its domain must be verified on Resend
+EMAIL_FROM = os.environ.get("EMAIL_FROM", "Kenkey Boys FC <trials@mail.kenkeyboys.com>")
+# The captain's own inbox: new-request alerts go here, and applicants' replies too
+CAPTAIN_EMAIL = os.environ.get("CAPTAIN_EMAIL", "")
+# The site's public address, used for links inside emails
+SITE_URL = os.environ.get("SITE_URL", "https://www.kenkeyboys.com")
 
 
 # ---------- Logging ----------

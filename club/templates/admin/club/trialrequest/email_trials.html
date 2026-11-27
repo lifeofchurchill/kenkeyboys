@@ -1,0 +1,42 @@
+{% extends "admin/base_site.html" %}
+
+{# The page shown after choosing "Invite ... and email them" or "Decline ... and email them". #}
+{# Nothing is sent until the captain clicks the button at the bottom. #}
+
+{% block content %}
+<form method="post">
+  {% csrf_token %}
+
+  <p>{{ intro }}</p>
+
+  {% if with_email %}
+    <h2>Will be emailed ({{ with_email|length }})</h2>
+    <ul>
+      {% for trial in with_email %}<li>{{ trial.gamertag }} · {{ trial.email }}</li>{% endfor %}
+    </ul>
+  {% endif %}
+
+  {% if without_email %}
+    <h2>No email on file ({{ without_email|length }})</h2>
+    <p>Their status will change, but they won't get an email. Contact them another way.</p>
+    <ul>
+      {% for trial in without_email %}<li>{{ trial.gamertag }}</li>{% endfor %}
+    </ul>
+  {% endif %}
+
+  <p>
+    <label for="id_note"><strong>{{ note_label }}</strong></label><br>
+    <textarea name="note" id="id_note" rows="5" cols="70" placeholder="{{ note_placeholder }}"></textarea>
+  </p>
+
+  {# Send the same selection and action back, plus "apply" to say: go ahead #}
+  {% for trial in queryset %}
+    <input type="hidden" name="{{ action_checkbox_name }}" value="{{ trial.pk }}">
+  {% endfor %}
+  <input type="hidden" name="action" value="{{ action_name }}">
+  <input type="hidden" name="apply" value="yes">
+
+  <input type="submit" class="default" value="{{ button }}">
+  <a href="{% url 'admin:club_trialrequest_changelist' %}" class="button cancel-link">Cancel</a>
+</form>
+{% endblock %}
