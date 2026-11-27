@@ -151,6 +151,12 @@ MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
 if os.environ.get("AWS_STORAGE_BUCKET_NAME"):
+    # Hosts built on Amazon's servers (like Vercel) can put their own temporary
+    # AWS "session token" into the environment. Neon's keys don't use one, and
+    # mixing it in would make Neon reject every upload, so remove it first
+    os.environ.pop("AWS_SESSION_TOKEN", None)
+    os.environ.pop("AWS_SECURITY_TOKEN", None)
+
     # Uploads go to the Neon bucket instead, because Vercel can't keep files on its own disk
     STORAGES = {
         "default": {"BACKEND": "storages.backends.s3.S3Storage"},
