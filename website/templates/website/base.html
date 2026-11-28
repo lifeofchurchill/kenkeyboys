@@ -47,6 +47,15 @@
   {% block extra_css %}{% endblock %}
   {# defer: download alongside the page, run once all the HTML has been read #}
   <script src="{% static 'website/js/site.js' %}" defer></script>
+
+  {# ---------- Visitor analytics (Vercel Web Analytics) ---------- #}
+  {# Counts page views, top pages, where visitors came from, countries and devices. No cookies. #}
+  {# The first script makes a small queue so nothing is lost while the real script downloads #}
+  <script>
+    window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+  </script>
+  {# This address only exists on Vercel. On the laptop it shows a harmless 404 in the terminal #}
+  <script defer src="/_vercel/insights/script.js"></script>
 </head>
 <body>
   {# Lets keyboard users jump past the menu straight to the content #}
